@@ -1,0 +1,6 @@
+services:
+  autoflow.api:
+    image: ${DOCKER_REGISTRY-}autoflowapi
+    build:
+      context: .
+      dockerfile: src/AutoFlow.Api/Dockerfile

@@ -1,4 +1,7 @@
 <Solution>
+  <Project Path="docker-compose.dcproj">
+    <Build />
+  </Project>
   <Project Path="src/AutoFlow.Api/AutoFlow.Api.csproj" />
   <Project Path="src/AutoFlow.Application/AutoFlow.Application.csproj" Id="7a721126-c890-4014-8d87-50acff607986" />
   <Project Path="src/AutoFlow.Domain/AutoFlow.Domain.csproj" Id="6262838f-3b78-49fa-b363-a879ffa77858" />
