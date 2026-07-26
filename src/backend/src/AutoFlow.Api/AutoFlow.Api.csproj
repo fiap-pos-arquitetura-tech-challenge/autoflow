@@ -11,4 +11,8 @@
     <PackageReference Include="Microsoft.OpenApi" Version="2.7.5" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\AutoFlow.Application\AutoFlow.Application.csproj" />
+  </ItemGroup>
+
 </Project>

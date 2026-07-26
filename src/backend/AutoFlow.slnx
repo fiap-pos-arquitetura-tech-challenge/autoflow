@@ -1,3 +1,7 @@
 <Solution>
-  <Project Path="AutoFlow.Api/AutoFlow.Api.csproj" />
+  <Project Path="src/AutoFlow.Api/AutoFlow.Api.csproj" />
+  <Project Path="src/AutoFlow.Application/AutoFlow.Application.csproj" Id="7a721126-c890-4014-8d87-50acff607986" />
+  <Project Path="src/AutoFlow.Domain/AutoFlow.Domain.csproj" Id="6262838f-3b78-49fa-b363-a879ffa77858" />
+  <Project Path="src/AutoFlow.Infrastructure/AutoFlow.Infrastructure.csproj" Id="a16b7c24-b1a5-496e-b3b3-0480efa52678" />
+  <Project Path="tests/AutoFlow.UnitTests/AutoFlow.UnitTests.csproj" Id="127c6bf5-6d82-4d6f-b8d1-596c7884a15f" />
 </Solution>
