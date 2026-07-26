@@ -1,0 +1,21 @@
+services:
+  autoflow.api:
+    image: ${DOCKER_REGISTRY-}autoflowapi
+    build:
+      context: .
+      dockerfile: src/AutoFlow.Api/Dockerfile
+    restart: unless-stopped
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver
+    restart: unless-stopped
+    environment:
+      SA_PASSWORD: "YourStrong!Passw0rd"
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Developer"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+
+volumes:
+  sqlserver_data:
