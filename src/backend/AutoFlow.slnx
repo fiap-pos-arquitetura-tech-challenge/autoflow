@@ -1,2 +1,3 @@
 <Solution>
+  <Project Path="AutoFlow.Api/AutoFlow.Api.csproj" />
 </Solution>
