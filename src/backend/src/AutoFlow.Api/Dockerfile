@@ -15,6 +15,7 @@ WORKDIR /src
 COPY ["src/AutoFlow.Api/AutoFlow.Api.csproj", "src/AutoFlow.Api/"]
 COPY ["src/AutoFlow.Application/AutoFlow.Application.csproj", "src/AutoFlow.Application/"]
 COPY ["src/AutoFlow.Domain/AutoFlow.Domain.csproj", "src/AutoFlow.Domain/"]
+COPY ["src/AutoFlow.Infrastructure/AutoFlow.Infrastructure.csproj", "src/AutoFlow.Infrastructure/"]
 RUN dotnet restore "./src/AutoFlow.Api/AutoFlow.Api.csproj"
 COPY . .
 WORKDIR "/src/src/AutoFlow.Api"
