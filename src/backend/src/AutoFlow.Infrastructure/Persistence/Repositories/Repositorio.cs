@@ -1,5 +1,5 @@
-﻿using AutoFlow.Domain.Models;
-using AutoFlow.Infrastructure.Interfaces.Repositories;
+﻿using AutoFlow.Application.Interfaces.Repositories;
+using AutoFlow.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace AutoFlow.Infrastructure.Persistence.Repositories
@@ -29,7 +29,7 @@ namespace AutoFlow.Infrastructure.Persistence.Repositories
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+            
         }
 
         public async Task<TBaseModel?> ObterPorId(int id)
