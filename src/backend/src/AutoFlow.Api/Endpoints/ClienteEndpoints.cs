@@ -9,7 +9,7 @@ namespace AutoFlow.Api.Endpoints
         public static IEndpointRouteBuilder MapClienteEndpoints(this IEndpointRouteBuilder app)
         {
             var group = app.MapGroup("/api/clientes")
-                .WithTags("Categories");
+                .WithTags("Clientes");
 
             app.MapPost("/", Adicionar)
                 .Produces<ClienteDto>(StatusCodes.Status201Created)
