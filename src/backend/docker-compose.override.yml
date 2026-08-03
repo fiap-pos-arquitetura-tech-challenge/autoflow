@@ -4,6 +4,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
       - ASPNETCORE_HTTPS_PORTS=8081
+      - 'ConnectionStrings:DefaultConnection=Server=sqlserver;Database=AutoFlow;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True'
     ports:
       - "8080"
       - "8081"
