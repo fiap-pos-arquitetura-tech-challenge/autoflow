@@ -12,6 +12,9 @@ namespace AutoFlow.Domain.ValueObjects
 
         public Documento(string numero)
         {
+            if (string.IsNullOrWhiteSpace(numero))
+                throw new DocumentoInvalidoException("Número do documento é obrigatório.");
+
             if (!Validar(numero))
                 throw new DocumentoInvalidoException("CPF/CNPJ inválido.");
 

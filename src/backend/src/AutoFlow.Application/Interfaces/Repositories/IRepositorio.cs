@@ -3,12 +3,12 @@ using System.Linq.Expressions;
 
 namespace AutoFlow.Application.Interfaces.Repositories
 {
-    public interface IRepositorio<TBaseModel> : IDisposable where TBaseModel : BaseModel
+    public interface IRepositorio<TBaseModel> where TBaseModel : BaseModel
     {
-        Task Adicionar(TBaseModel entidade);
-        Task<TBaseModel?> ObterPorId(int id);
-        Task<List<TBaseModel>> ObterTodos();
-        Task Atualizar(TBaseModel entidade);
-        Task Remover(int id);
+        Task AdicionarAsync(TBaseModel entidade);
+        Task AtualizarAsync(TBaseModel entidade);
+        Task ExcluirAsync(TBaseModel entidade);
+        Task<TBaseModel?> ObterPorIdAsync(int id);
+        Task<List<TBaseModel>> ObterTodosAsync();
     }
 }
