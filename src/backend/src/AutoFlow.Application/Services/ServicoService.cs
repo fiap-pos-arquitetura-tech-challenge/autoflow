@@ -1,0 +1,118 @@
+﻿using AutoFlow.Application.DTOs;
+using AutoFlow.Application.Interfaces.Repositories;
+using AutoFlow.Application.Interfaces.Services;
+using AutoFlow.Application.Services.Enums;
+using AutoFlow.Application.Validators;
+using AutoFlow.Domain.Models;
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace AutoFlow.Application.Services
+{
+    public class ServicoService(IServicoRepositorio servicoRepositorio) : IServicoService
+    {
+        private readonly IServicoRepositorio _servicoRepositorio = servicoRepositorio;
+
+        public async Task<Result<ServicoDto>> AdicionarAsync(CriaServicoDto servicoDto)
+        {
+            var validador = ServicoValidador.Validar(servicoDto);
+
+            if (validador is not null)
+            {
+                return Result<ServicoDto>.Failure(validador.Error!, validador.ErrorType!);
+            }
+
+            var servico = new Servico(
+                servicoDto.Nome,
+                servicoDto.Preco,
+                servicoDto.TempoMedio
+            );
+
+            await _servicoRepositorio.AdicionarAsync(servico);
+
+            return Result<ServicoDto>.Success(new ServicoDto(
+                servico.Id,
+                servico.Nome,
+                servico.Preco,
+                servico.TempoMedio
+            ));
+        }
+
+        public async Task<Result<ServicoDto>> AtualizarAsync(int id, AtualizaServicoDto servicoDto)
+        {
+            var validador = ServicoValidador.Validar(servicoDto);
+
+            if (validador is not null)
+            {
+                return Result<ServicoDto>.Failure(validador.Error!, validador.ErrorType!);
+            }
+
+            var servico = await _servicoRepositorio.ObterPorIdAsync(id);
+
+            if (servico == null)
+            {
+                return Result<ServicoDto>.Failure("Serviço não encontrado.", ErrorType.NotFound);
+            }
+
+            servico.Atualizar(
+                servicoDto.Nome,
+                servicoDto.Preco,
+                servicoDto.TempoMedio
+            );
+
+            await _servicoRepositorio.AtualizarAsync(servico);
+
+            return Result<ServicoDto>.Success(new ServicoDto(
+                servico.Id,
+                servico.Nome,
+                servico.Preco,
+                servico.TempoMedio
+            ));
+        }
+
+        public async Task<Result> ExcluirAsync(int id)
+        {
+            var servico = await _servicoRepositorio.ObterPorIdAsync(id);
+
+            if (servico == null)
+            {
+                return Result.Failure("Serviço não encontrado.", ErrorType.NotFound);
+            }
+
+            await _servicoRepositorio.ExcluirAsync(servico);
+
+            return Result.Success();
+        }
+
+        public async Task<Result<ServicoDto>> ObterPorIdAsync(int id)
+        {
+            var servICO = await _servicosRepositorio.ObterPorIdAsync(id);
+
+            if (servICO == null)
+            {
+                return Result<ServicoDto>.Failure("Serviço não encontrado.", ErrorType.NotFound);
+            }
+
+            return Result<ServicoDto>.Success(new ServicoDto(
+                servICO.Id,
+                servICO.Nome,
+                servICO.Preco,
+                servICO.TempoMedio
+            ));
+        }
+
+        public async Task<IEnumerable<ServicoDto>> ObterTodosAsync()
+        {
+            var serviços = await _servicosRepositorio.ObterTodosAsync();
+            return serviços.Select(s => new ServicoDto
+            (
+                s.Id,
+                s.Nome,
+                s.Preco,
+                s.TempoMedio
+            ));
+        }
+    }
+}
+
