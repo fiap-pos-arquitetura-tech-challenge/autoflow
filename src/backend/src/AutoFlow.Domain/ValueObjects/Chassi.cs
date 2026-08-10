@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AutoFlow.Domain.Exceptions;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -11,10 +12,10 @@ namespace AutoFlow.Domain.ValueObjects
         public Chassi(string valor)
         {
             if (string.IsNullOrWhiteSpace(valor))
-                throw new ArgumentException("Chassi inválido.");
+                throw new ChassiInvalidoException("Chassi inválido.");
 
             if (valor.Length != 17)
-                throw new ArgumentException("Chassi deve possuir 17 caracteres.");
+                throw new ChassiInvalidoException("Chassi deve possuir 17 caracteres.");
 
             Valor = valor.ToUpper();
         }

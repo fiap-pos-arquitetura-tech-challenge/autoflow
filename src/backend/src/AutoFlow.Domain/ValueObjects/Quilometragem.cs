@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AutoFlow.Domain.Exceptions;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -11,7 +12,7 @@ namespace AutoFlow.Domain.ValueObjects
         public Quilometragem(int valor)
         {
             if (valor < 0)
-                throw new ArgumentException("Quilometragem inválida.");
+                throw new QuilometragemInvalidaException("Quilometragem inválida.");
 
             Valor = valor;
         }

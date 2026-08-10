@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AutoFlow.Domain.Exceptions;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -12,7 +13,7 @@ namespace AutoFlow.Domain.ValueObjects
         public Placa(string valor)
         {
             if (string.IsNullOrWhiteSpace(valor))
-                throw new ArgumentException("Placa inválida.");
+                throw new PlacaInvalidaException("Placa inválida.");
 
             valor = valor.ToUpper().Trim();
 
@@ -22,7 +23,7 @@ namespace AutoFlow.Domain.ValueObjects
             if (!Regex.IsMatch(valor, placaMercosul) &&
                 !Regex.IsMatch(valor, placaAntiga))
             {
-                throw new ArgumentException("Formato de placa inválido.");
+                throw new PlacaInvalidaException("Formato de placa inválido.");
             }
 
             Valor = valor;

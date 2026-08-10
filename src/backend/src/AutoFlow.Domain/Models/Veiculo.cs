@@ -1,4 +1,5 @@
-﻿using AutoFlow.Domain.ValueObjects;
+﻿using AutoFlow.Domain.Enums;
+using AutoFlow.Domain.ValueObjects;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -34,7 +35,7 @@ namespace AutoFlow.Domain.Models
         }
 
         public Veiculo(
-            Guid clienteId,
+            int clienteId,
             string marca,
             string modelo,
             int anoFabricacao,
