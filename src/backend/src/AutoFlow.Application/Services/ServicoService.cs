@@ -87,7 +87,7 @@ namespace AutoFlow.Application.Services
 
         public async Task<Result<ServicoDto>> ObterPorIdAsync(int id)
         {
-            var servICO = await _servicosRepositorio.ObterPorIdAsync(id);
+            var servICO = await _servicoRepositorio.ObterPorIdAsync(id);
 
             if (servICO == null)
             {
@@ -104,7 +104,7 @@ namespace AutoFlow.Application.Services
 
         public async Task<IEnumerable<ServicoDto>> ObterTodosAsync()
         {
-            var serviços = await _servicosRepositorio.ObterTodosAsync();
+            var serviços = await _servicoRepositorio.ObterTodosAsync();
             return serviços.Select(s => new ServicoDto
             (
                 s.Id,
