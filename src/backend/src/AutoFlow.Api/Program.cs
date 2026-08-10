@@ -31,4 +31,8 @@ app.UseHttpsRedirection();
 
 app.MapClienteEndpoints();
 
+app.MapPecaInsumoEndpoints();
+
+app.MapEstoqueEndpoints();
+
 app.Run();

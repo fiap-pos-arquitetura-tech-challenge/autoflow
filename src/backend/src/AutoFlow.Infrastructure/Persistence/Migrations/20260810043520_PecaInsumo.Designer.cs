@@ -3,6 +3,7 @@ using AutoFlow.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AutoFlow.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260810043520_PecaInsumo")]
+    partial class PecaInsumo
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -46,25 +49,6 @@ namespace AutoFlow.Infrastructure.Persistence.Migrations
                     b.ToTable("Cliente", (string)null);
                 });
 
-            modelBuilder.Entity("AutoFlow.Domain.Models.Estoque", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("PecaInsumoId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PecaInsumoId")
-                        .IsUnique();
-
-                    b.ToTable("Estoque", (string)null);
-                });
-
             modelBuilder.Entity("AutoFlow.Domain.Models.PecaInsumo", b =>
                 {
                     b.Property<int>("Id")
@@ -76,6 +60,13 @@ namespace AutoFlow.Infrastructure.Persistence.Migrations
                     b.Property<string>("Nome")
                         .IsRequired()
                         .HasColumnType("varchar(100)");
+
+                    b.Property<int>("Quantidade")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Valor")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 
@@ -103,61 +94,6 @@ namespace AutoFlow.Infrastructure.Persistence.Migrations
                         });
 
                     b.Navigation("Documento")
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("AutoFlow.Domain.Models.Estoque", b =>
-                {
-                    b.HasOne("AutoFlow.Domain.Models.PecaInsumo", "PecaInsumo")
-                        .WithOne()
-                        .HasForeignKey("AutoFlow.Domain.Models.Estoque", "PecaInsumoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.OwnsOne("AutoFlow.Domain.ValueObjects.Comum.Quantidade", "Quantidade", b1 =>
-                        {
-                            b1.Property<int>("EstoqueId")
-                                .HasColumnType("int");
-
-                            b1.Property<int>("Valor")
-                                .HasColumnType("int")
-                                .HasColumnName("Quantidade");
-
-                            b1.HasKey("EstoqueId");
-
-                            b1.ToTable("Estoque");
-
-                            b1.WithOwner()
-                                .HasForeignKey("EstoqueId");
-                        });
-
-                    b.Navigation("PecaInsumo");
-
-                    b.Navigation("Quantidade")
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("AutoFlow.Domain.Models.PecaInsumo", b =>
-                {
-                    b.OwnsOne("AutoFlow.Domain.ValueObjects.Dinheiro", "Valor", b1 =>
-                        {
-                            b1.Property<int>("PecaInsumoId")
-                                .HasColumnType("int");
-
-                            b1.Property<decimal>("Valor")
-                                .HasPrecision(18, 2)
-                                .HasColumnType("decimal(18,2)")
-                                .HasColumnName("Valor");
-
-                            b1.HasKey("PecaInsumoId");
-
-                            b1.ToTable("PecaInsumo");
-
-                            b1.WithOwner()
-                                .HasForeignKey("PecaInsumoId");
-                        });
-
-                    b.Navigation("Valor")
                         .IsRequired();
                 });
 #pragma warning restore 612, 618
