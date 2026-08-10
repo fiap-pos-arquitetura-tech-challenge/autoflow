@@ -18,6 +18,13 @@
             Preco = preco;
             TempoMedio = tempoMedio;
         }
+
+        public void Atualizar(string nome, decimal preco, int tempoMedio)
+        {
+            Nome = nome;
+            Preco = preco;
+            TempoMedio = tempoMedio;
+        }
     }
 }
      
