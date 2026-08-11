@@ -22,13 +22,21 @@ namespace AutoFlow.Infrastructure.Persistence.Configurations
                     .HasColumnType("varchar(14)");
             });
 
-            builder.Property(x => x.Telefone)
-                .IsRequired()
-                .HasColumnType("varchar(15)");
+            builder.OwnsOne(cliente => cliente.Telefone, telefone =>
+            {
+                telefone.Property(t => t.Numero)
+                    .HasColumnName("Telefone")
+                    .IsRequired()
+                    .HasColumnType("varchar(15)");
+            });
 
-            builder.Property(x => x.Email)
-                .IsRequired()
-                .HasColumnType("varchar(100)");
+            builder.OwnsOne(cliente => cliente.Email, email =>
+            {
+                email.Property(e => e.Endereco)
+                    .HasColumnName("Email")
+                    .IsRequired()
+                    .HasColumnType("varchar(100)");
+            });
 
             builder.ToTable("Cliente");
         }

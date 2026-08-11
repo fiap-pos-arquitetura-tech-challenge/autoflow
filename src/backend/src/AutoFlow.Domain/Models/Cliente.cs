@@ -7,8 +7,8 @@ namespace AutoFlow.Domain.Models
     {
         public string Nome { get; private set; }
         public Documento Documento { get; private set; }
-        public string Telefone { get; private set; }
-        public string Email { get; private set; }
+        public Telefone Telefone { get; private set; }
+        public Email Email { get; private set; }
 
         public Cliente()
         {
@@ -21,43 +21,27 @@ namespace AutoFlow.Domain.Models
         public Cliente(string nome, string documento, string telefone, string email)
         {
             ValidarNome(nome);
-            ValidarTelefone(telefone);
-            ValidarEmail(email);
 
             Nome = nome;
             Documento = new Documento(documento);
-            Telefone = telefone;
-            Email = email;
+            Telefone = new Telefone(telefone);
+            Email = new Email(email);
         }
 
         public void Atualizar(string nome, string documento, string telefone, string email)
         {
             ValidarNome(nome);
-            ValidarTelefone(telefone);
-            ValidarEmail(email);
 
             Nome = nome;
             Documento = new Documento(documento);
-            Telefone = telefone;
-            Email = email;
-        }
-
-        private static void ValidarEmail(string email)
-        {
-            if (string.IsNullOrWhiteSpace(email))
-                throw new ClienteInvalidoException("Email é obrigatório.");
+            Telefone = new Telefone(telefone);
+            Email = new Email(email);
         }
 
         private static void ValidarNome(string nome)
         {
             if (string.IsNullOrWhiteSpace(nome))
                 throw new ClienteInvalidoException("Nome é obrigatório.");
-        }
-
-        private static void ValidarTelefone(string telefone)
-        {
-            if (string.IsNullOrWhiteSpace(telefone))
-                throw new ClienteInvalidoException("Telefone é obrigatório.");
         }
     }
 }

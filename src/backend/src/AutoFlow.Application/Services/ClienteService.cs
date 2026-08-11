@@ -33,8 +33,8 @@ namespace AutoFlow.Application.Services
                 cliente.Id,
                 cliente.Nome,
                 cliente.Documento.Numero,
-                cliente.Telefone,
-                cliente.Email
+                cliente.Telefone.Numero,
+                cliente.Email.Endereco
             ));
         }
 
@@ -67,8 +67,8 @@ namespace AutoFlow.Application.Services
                 cliente.Id,
                 cliente.Nome,
                 cliente.Documento.Numero,
-                cliente.Telefone,
-                cliente.Email
+                cliente.Telefone.Numero,
+                cliente.Email.Endereco
             ));
         }
 
@@ -99,8 +99,8 @@ namespace AutoFlow.Application.Services
                 cliente.Id,
                 cliente.Nome,
                 cliente.Documento.Numero,
-                cliente.Telefone,
-                cliente.Email
+                cliente.Telefone.Numero,
+                cliente.Email.Endereco
             ));
         }
 
@@ -112,8 +112,8 @@ namespace AutoFlow.Application.Services
                 c.Id,
                 c.Nome,
                 c.Documento.Numero,
-                c.Telefone,
-                c.Email
+                c.Telefone.Numero,
+                c.Email.Endereco
             ));
         }
     }
