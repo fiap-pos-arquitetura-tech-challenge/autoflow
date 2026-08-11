@@ -1,5 +1,6 @@
 using AutoFlow.Api.Configuration;
 using AutoFlow.Api.Endpoints;
+using AutoFlow.Api.Middlewares;
 using AutoFlow.Infrastructure;
 using AutoFlow.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +14,8 @@ builder.Services.ResolveDependencies();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 var app = builder.Build();
 
@@ -27,6 +30,7 @@ if (app.Environment.IsDevelopment())
     dbContext.Database.Migrate();
 }
 
+app.UseExceptionHandler();
 app.UseHttpsRedirection();
 
 app.MapClienteEndpoints();
