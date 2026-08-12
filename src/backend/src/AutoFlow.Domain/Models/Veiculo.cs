@@ -11,6 +11,8 @@ namespace AutoFlow.Domain.Models
     {
         public int ClienteId { get; private set; }
 
+        public Cliente Cliente { get; private set; }
+
         public string Marca { get; private set; }
 
         public string Modelo { get; private set; }
@@ -31,10 +33,10 @@ namespace AutoFlow.Domain.Models
 
         public Quilometragem Quilometragem { get; private set; }
 
-        protected Veiculo()
+        public Veiculo()
         {
-        }
 
+        }
         public Veiculo(
             int clienteId,
             string marca,
