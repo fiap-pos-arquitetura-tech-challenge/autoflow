@@ -38,7 +38,7 @@ namespace AutoFlow.Api.Endpoints
         }
 
         private static async Task<IResult> Adicionar(
-            CriaVeiculoDto clienteDto,
+            CriaClienteDto clienteDto,
             IClienteService clienteService)
         {
             var result = await clienteService.AdicionarAsync(clienteDto);
@@ -48,7 +48,7 @@ namespace AutoFlow.Api.Endpoints
 
         private static async Task<IResult> Atualizar(
             int id,
-            AtualizaVeiculoDto clienteDto,
+            AtualizaClienteDto clienteDto,
             IClienteService clienteService)
         {
             var result = await clienteService.AtualizarAsync(id, clienteDto);

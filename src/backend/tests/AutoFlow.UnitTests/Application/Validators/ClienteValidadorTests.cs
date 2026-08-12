@@ -6,7 +6,7 @@ namespace AutoFlow.UnitTests.Application.Validators
 {
     public class ClienteValidadorTests
     {
-        private static CriaVeiculoDto DtoValido() =>
+        private static CriaClienteDto DtoValido() =>
             new("João da Silva", "12345678901", "11999999999", "joao@email.com");
 
         [Fact]
