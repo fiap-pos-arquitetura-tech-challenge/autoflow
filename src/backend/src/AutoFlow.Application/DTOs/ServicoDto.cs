@@ -10,14 +10,12 @@ namespace AutoFlow.Application.DTOs
     );
 
     public record CriaServicoDto(
-           int Id,
            string Nome,
            decimal Preco,
            int TempoMedio
        ) : IServicoDTO;
 
     public record AtualizaServicoDto(
-           int Id,
            string Nome,
            decimal Preco,
            int TempoMedio
