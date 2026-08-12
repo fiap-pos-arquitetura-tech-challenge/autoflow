@@ -30,5 +30,6 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.MapClienteEndpoints();
+app.MapServicoEndpoints();
 
 app.Run();
