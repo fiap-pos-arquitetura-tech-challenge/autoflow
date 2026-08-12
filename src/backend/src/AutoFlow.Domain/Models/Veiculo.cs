@@ -1,4 +1,5 @@
 ﻿using AutoFlow.Domain.Enums;
+using AutoFlow.Domain.Exceptions;
 using AutoFlow.Domain.ValueObjects;
 using System;
 using System.Collections.Generic;
@@ -77,7 +78,7 @@ namespace AutoFlow.Domain.Models
         public void AtualizarQuilometragem(int novaQuilometragem)
         {
             if (novaQuilometragem < Quilometragem.Valor)
-                throw new InvalidOperationException(
+                throw new QuilometragemInvalidaException(
                     "A quilometragem não pode diminuir.");
 
             Quilometragem = new Quilometragem(novaQuilometragem);

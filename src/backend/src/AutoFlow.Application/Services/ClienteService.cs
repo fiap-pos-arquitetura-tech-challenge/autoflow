@@ -11,7 +11,7 @@ namespace AutoFlow.Application.Services
     {
         private readonly IClienteRepositorio _clienteRepositorio = clienteRepositorio;
 
-        public async Task<Result<ClienteDto>> AdicionarAsync(CriaClienteDto clienteDto)
+        public async Task<Result<ClienteDto>> AdicionarAsync(CriaVeiculoDto clienteDto)
         {
             var validador = ClienteValidador.Validar(clienteDto);
 
@@ -38,7 +38,7 @@ namespace AutoFlow.Application.Services
             ));
         }
 
-        public async Task<Result<ClienteDto>> AtualizarAsync(int id, AtualizaClienteDto clienteDto)
+        public async Task<Result<ClienteDto>> AtualizarAsync(int id, AtualizaVeiculoDto clienteDto)
         {
             var validador = ClienteValidador.Validar(clienteDto);
 
