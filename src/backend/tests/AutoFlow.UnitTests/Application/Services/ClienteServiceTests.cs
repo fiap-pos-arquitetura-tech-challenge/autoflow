@@ -18,12 +18,12 @@ namespace AutoFlow.UnitTests.Application.Services
         }
 
         private static Cliente ClienteValido(int id = 1) =>
-            new("João da Silva", "12345678901", "11999999999", "joao@email.com") { Id = id };
+            new("João da Silva", "11144477735", "11999999999", "joao@email.com") { Id = id };
 
         [Fact]
         public async Task AdicionarAsync_ComDadosValidos_DeveAdicionarERetornarSucesso()
         {
-            var dto = new CriaClienteDto("João da Silva", "12345678901", "11999999999", "joao@email.com");
+            var dto = new CriaClienteDto("João da Silva", "11144477735", "11999999999", "joao@email.com");
 
             var resultado = await _service.AdicionarAsync(dto);
 
@@ -38,7 +38,7 @@ namespace AutoFlow.UnitTests.Application.Services
         [Fact]
         public async Task AdicionarAsync_ComDadosInvalidos_DeveRetornarFailureSemChamarRepositorio()
         {
-            var dto = new CriaClienteDto("", "12345678901", "11999999999", "joao@email.com");
+            var dto = new CriaClienteDto("", "11144477735", "11999999999", "joao@email.com");
 
             var resultado = await _service.AdicionarAsync(dto);
 
@@ -51,7 +51,7 @@ namespace AutoFlow.UnitTests.Application.Services
         public async Task AtualizarAsync_ComClienteExistenteEDadosValidos_DeveAtualizarERetornarSucesso()
         {
             var cliente = ClienteValido();
-            var dto = new AtualizaClienteDto("Maria Souza", "12345678000199", "11888888888", "maria@email.com");
+            var dto = new AtualizaClienteDto("Maria Souza", "11222333000181", "11888888888", "maria@email.com");
 
             _clienteRepositorioMock.Setup(r => r.ObterPorIdAsync(cliente.Id)).ReturnsAsync(cliente);
 
@@ -66,7 +66,7 @@ namespace AutoFlow.UnitTests.Application.Services
         [Fact]
         public async Task AtualizarAsync_ComDadosInvalidos_DeveRetornarFailureSemBuscarCliente()
         {
-            var dto = new AtualizaClienteDto("", "12345678000199", "11888888888", "maria@email.com");
+            var dto = new AtualizaClienteDto("", "11222333000181", "11888888888", "maria@email.com");
 
             var resultado = await _service.AtualizarAsync(1, dto);
 
@@ -78,7 +78,7 @@ namespace AutoFlow.UnitTests.Application.Services
         [Fact]
         public async Task AtualizarAsync_ComClienteInexistente_DeveRetornarFailureNotFound()
         {
-            var dto = new AtualizaClienteDto("Maria Souza", "12345678000199", "11888888888", "maria@email.com");
+            var dto = new AtualizaClienteDto("Maria Souza", "11222333000181", "11888888888", "maria@email.com");
 
             _clienteRepositorioMock.Setup(r => r.ObterPorIdAsync(It.IsAny<int>())).ReturnsAsync((Cliente?)null);
 
