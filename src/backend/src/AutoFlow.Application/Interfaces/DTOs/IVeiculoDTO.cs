@@ -10,8 +10,8 @@ namespace AutoFlow.Application.Interfaces.DTOs
         int AnoFabricacao { get;}
         int AnoModelo { get; }
         string Cor { get;}
-        TipoVeiculo Tipo { get;}
-        Combustivel Combustivel { get;}
+        TipoVeiculo Tipo { get; } 
+        Combustivel Combustivel { get;} 
         string Placa { get;}
         string Chassi { get;}
         int Quilometragem { get;}

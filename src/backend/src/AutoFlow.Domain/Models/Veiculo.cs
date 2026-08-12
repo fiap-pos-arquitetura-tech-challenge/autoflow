@@ -83,5 +83,33 @@ namespace AutoFlow.Domain.Models
 
             Quilometragem = new Quilometragem(novaQuilometragem);
         }
+
+        public void Atualizar(
+            int clienteId,
+            string marca,
+            string modelo,
+            int anoFabricacao,
+            int anoModelo,
+            string cor,
+            TipoVeiculo tipo,
+            Combustivel combustivel,
+            string placa,
+            string chassi,
+            int quilometragem)
+        {
+            ClienteId = clienteId;
+            Marca = marca;
+            Modelo = modelo;
+            AnoFabricacao = anoFabricacao;
+            AnoModelo = anoModelo;
+            Cor = cor;
+            Tipo = tipo;
+            Combustivel = combustivel;
+            Placa = new Placa(placa);
+            Chassi = new Chassi(chassi);
+            Quilometragem = new Quilometragem(quilometragem);
+
+            Validar();
+        }
     }
 }
