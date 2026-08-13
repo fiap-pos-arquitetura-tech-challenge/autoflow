@@ -20,6 +20,8 @@ namespace AutoFlow.Infrastructure.Persistence.Configurations
                     .HasColumnName("Documento")
                     .IsRequired()
                     .HasColumnType("varchar(14)");
+
+                documento.HasIndex(d => d.Numero).IsUnique();
             });
 
             builder.OwnsOne(cliente => cliente.Telefone, telefone =>

@@ -4,6 +4,7 @@ using AutoFlow.Application.Interfaces.Services;
 using AutoFlow.Application.Services.Enums;
 using AutoFlow.Application.Validators;
 using AutoFlow.Domain.Models;
+using AutoFlow.Domain.ValueObjects;
 
 namespace AutoFlow.Application.Services
 {
@@ -26,6 +27,13 @@ namespace AutoFlow.Application.Services
                 clienteDto.Telefone,
                 clienteDto.Email
             );
+
+            var clienteComMesmoDocumento = await _clienteRepositorio.ObterPorDocumentoAsync(cliente.Documento.Numero);
+
+            if (clienteComMesmoDocumento != null)
+            {
+                return Result<ClienteDto>.Failure("Já existe um cliente cadastrado com este documento.", ErrorType.Conflict);
+            }
 
             await _clienteRepositorio.AdicionarAsync(cliente);
 
@@ -52,6 +60,14 @@ namespace AutoFlow.Application.Services
             if (cliente == null)
             {
                 return Result<ClienteDto>.Failure("Cliente não encontrado.", ErrorType.NotFound);
+            }
+
+            var documentoNormalizado = new Documento(clienteDto.Documento).Numero;
+            var clienteComMesmoDocumento = await _clienteRepositorio.ObterPorDocumentoAsync(documentoNormalizado);
+
+            if (clienteComMesmoDocumento != null && clienteComMesmoDocumento.Id != id)
+            {
+                return Result<ClienteDto>.Failure("Já existe um cliente cadastrado com este documento.", ErrorType.Conflict);
             }
 
             cliente.Atualizar(

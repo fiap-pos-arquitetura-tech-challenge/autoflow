@@ -48,6 +48,22 @@ namespace AutoFlow.UnitTests.Application.Services
         }
 
         [Fact]
+        public async Task AdicionarAsync_ComDocumentoJaCadastrado_DeveRetornarFailureConflictSemAdicionar()
+        {
+            var clienteExistente = ClienteValido();
+            var dto = new CriaClienteDto("João da Silva", "11144477735", "11999999999", "joao@email.com");
+
+            _clienteRepositorioMock.Setup(r => r.ObterPorDocumentoAsync("11144477735")).ReturnsAsync(clienteExistente);
+
+            var resultado = await _service.AdicionarAsync(dto);
+
+            Assert.False(resultado.IsSuccess);
+            Assert.Equal("Já existe um cliente cadastrado com este documento.", resultado.Error);
+            Assert.Equal(ErrorType.Conflict, resultado.ErrorType);
+            _clienteRepositorioMock.Verify(r => r.AdicionarAsync(It.IsAny<Cliente>()), Times.Never);
+        }
+
+        [Fact]
         public async Task AtualizarAsync_ComClienteExistenteEDadosValidos_DeveAtualizarERetornarSucesso()
         {
             var cliente = ClienteValido();
@@ -60,6 +76,39 @@ namespace AutoFlow.UnitTests.Application.Services
             Assert.True(resultado.IsSuccess);
             Assert.Equal(dto.Nome, resultado.Value!.Nome);
             Assert.Equal(dto.Documento, resultado.Value.Documento);
+            _clienteRepositorioMock.Verify(r => r.AtualizarAsync(cliente), Times.Once);
+        }
+
+        [Fact]
+        public async Task AtualizarAsync_ComDocumentoJaCadastradoParaOutroCliente_DeveRetornarFailureConflictSemAtualizar()
+        {
+            var cliente = ClienteValido(1);
+            var outroCliente = ClienteValido(2);
+            var dto = new AtualizaClienteDto("Maria Souza", "11222333000181", "11888888888", "maria@email.com");
+
+            _clienteRepositorioMock.Setup(r => r.ObterPorIdAsync(cliente.Id)).ReturnsAsync(cliente);
+            _clienteRepositorioMock.Setup(r => r.ObterPorDocumentoAsync("11222333000181")).ReturnsAsync(outroCliente);
+
+            var resultado = await _service.AtualizarAsync(cliente.Id, dto);
+
+            Assert.False(resultado.IsSuccess);
+            Assert.Equal("Já existe um cliente cadastrado com este documento.", resultado.Error);
+            Assert.Equal(ErrorType.Conflict, resultado.ErrorType);
+            _clienteRepositorioMock.Verify(r => r.AtualizarAsync(It.IsAny<Cliente>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task AtualizarAsync_ComDocumentoPertencenteAoProprioCliente_DeveAtualizarERetornarSucesso()
+        {
+            var cliente = ClienteValido(1);
+            var dto = new AtualizaClienteDto("João da Silva", "11144477735", "11888888888", "joao@email.com");
+
+            _clienteRepositorioMock.Setup(r => r.ObterPorIdAsync(cliente.Id)).ReturnsAsync(cliente);
+            _clienteRepositorioMock.Setup(r => r.ObterPorDocumentoAsync("11144477735")).ReturnsAsync(cliente);
+
+            var resultado = await _service.AtualizarAsync(cliente.Id, dto);
+
+            Assert.True(resultado.IsSuccess);
             _clienteRepositorioMock.Verify(r => r.AtualizarAsync(cliente), Times.Once);
         }
 
