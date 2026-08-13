@@ -39,7 +39,7 @@ namespace AutoFlow.Application.Validators
                 return Result.Failure("Quilometragem não pode ser negativa.", ErrorType.Validation);
 
             if(!Enum.IsDefined(veiculo.Tipo))
-                return Result.Failure("Tipo de veículo é obrigatório.", ErrorType.Validation);
+                return Result.Failure("Tipo de veículo é inválido.", ErrorType.Validation);
 
             if (!Enum.IsDefined(veiculo.Combustivel))
                 return Result.Failure("Tipo de combustivél deve ser fornecido.", ErrorType.Validation);
