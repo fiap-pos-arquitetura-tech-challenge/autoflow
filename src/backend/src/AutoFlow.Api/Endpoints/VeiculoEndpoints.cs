@@ -11,20 +11,20 @@ namespace AutoFlow.Api.Endpoints
             var group = app.MapGroup("/api/veiculos")
                 .WithTags("Veiculos");
 
-            app.MapPost("/", Adicionar)
+            group.MapPost("/", Adicionar)
                 .Produces<VeiculoDto>(StatusCodes.Status201Created)
                 .Produces(StatusCodes.Status400BadRequest);
-            app.MapPut("/{id:int}", Atualizar)
+            group.MapPut("/{id:int}", Atualizar)
                 .Produces<VeiculoDto>(StatusCodes.Status200OK)
                 .Produces(StatusCodes.Status400BadRequest)
                 .Produces(StatusCodes.Status404NotFound);
-            app.MapDelete("/{id:int}", Excluir)
+            group.MapDelete("/{id:int}", Excluir)
                 .Produces(StatusCodes.Status204NoContent)
                 .Produces(StatusCodes.Status404NotFound);
-            app.MapGet("/{id:int}", ObterPorId)
+            group.MapGet("/{id:int}", ObterPorId)
                 .Produces<VeiculoDto>(StatusCodes.Status200OK)
                 .Produces(StatusCodes.Status404NotFound);
-            app.MapGet("/", ObterTodos)
+            group.MapGet("/", ObterTodos)
                 .Produces<IEnumerable<VeiculoDto>>(StatusCodes.Status200OK);
             return app;
         }
