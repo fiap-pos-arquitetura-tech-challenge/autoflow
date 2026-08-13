@@ -25,6 +25,26 @@ namespace AutoFlow.UnitTests.Domain.ValueObjects
             Assert.True(documento.EhCnpj);
         }
 
+        [Fact]
+        public void Construtor_ComCpfComMascara_DeveRemoverMascaraECriarDocumentoComoCpf()
+        {
+            var documento = new Documento("111.444.777-35");
+
+            Assert.Equal("11144477735", documento.Numero);
+            Assert.True(documento.EhCpf);
+            Assert.False(documento.EhCnpj);
+        }
+
+        [Fact]
+        public void Construtor_ComCnpjComMascara_DeveRemoverMascaraECriarDocumentoComoCnpj()
+        {
+            var documento = new Documento("11.222.333/0001-81");
+
+            Assert.Equal("11222333000181", documento.Numero);
+            Assert.False(documento.EhCpf);
+            Assert.True(documento.EhCnpj);
+        }
+
         [Theory]
         [InlineData(null)]
         [InlineData("")]

@@ -16,13 +16,20 @@ namespace AutoFlow.Domain.ValueObjects
             if (string.IsNullOrWhiteSpace(numero))
                 throw new DocumentoInvalidoException("Número do documento é obrigatório.");
 
-            if (!ValidarTamanhoDocumento(numero))
+            var numeroSemMascara = RemoverMascara(numero);
+
+            if (!ValidarTamanhoDocumento(numeroSemMascara))
                 throw new DocumentoInvalidoException("Documento precisa ter entre 11 e 14 caracteres.");
 
-            Numero = numero;
+            Numero = numeroSemMascara;
 
-            if (!ValidarDocumento(numero))
+            if (!ValidarDocumento(numeroSemMascara))
                 throw new DocumentoInvalidoException($"{(EhCpf ? "CPF" : "CNPJ")} inválido.");
+        }
+
+        private static string RemoverMascara(string numero)
+        {
+            return new string([.. numero.Where(char.IsLetterOrDigit)]);
         }
 
         private static bool ValidarTamanhoDocumento(string numero)
