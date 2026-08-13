@@ -68,17 +68,18 @@ namespace AutoFlow.Application.Services
                 return Result<VeiculoDto>.Failure("Veiculo não encontrado!", ErrorType.NotFound);
             }
 
-            veiculo.Atualizar(veiculoDto.ClienteId,
+            veiculo.Atualizar(
+                veiculoDto.ClienteId,
                 veiculoDto.Marca,
                 veiculoDto.Modelo,
                 veiculoDto.AnoFabricacao,
-                veiculo.AnoModelo,
-                veiculo.Cor,
-                veiculo.Tipo,
-                veiculo.Combustivel,
-                veiculo.Placa.Valor,
-                veiculo.Chassi.Valor,
-                veiculo.Quilometragem.Valor
+                veiculoDto.AnoModelo,
+                veiculoDto.Cor,
+                veiculoDto.Tipo,
+                veiculoDto.Combustivel,
+                veiculoDto.Placa,
+                veiculoDto.Chassi,
+                veiculoDto.Quilometragem
             );
 
             await _veiculoRepositorio.AtualizarAsync(veiculo);
