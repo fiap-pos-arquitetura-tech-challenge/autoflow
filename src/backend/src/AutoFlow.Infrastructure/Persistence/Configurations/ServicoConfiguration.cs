@@ -22,8 +22,11 @@ namespace AutoFlow.Infrastructure.Persistence.Configurations
                 .IsRequired()
                 .HasColumnType("int");
 
+            builder.HasIndex(s => s.Nome)
+                .IsUnique();
+
             builder.ToTable("Servico");
         }
     }
-    
+
 }

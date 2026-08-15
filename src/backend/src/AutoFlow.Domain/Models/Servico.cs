@@ -1,4 +1,6 @@
-﻿namespace AutoFlow.Domain.Models
+﻿using AutoFlow.Domain.Exceptions;
+
+namespace AutoFlow.Domain.Models
 {
     public class Servico : BaseModel
     {
@@ -21,10 +23,23 @@
 
         public void Atualizar(string nome, decimal preco, int tempoMedio)
         {
+            ValidarNome(nome);
+
             Nome = nome;
             Preco = preco;
             TempoMedio = tempoMedio;
         }
+
+        private static void ValidarNome(string nome)
+        {
+            if (string.IsNullOrWhiteSpace(nome))
+                throw new ServicoInvalidoException("Nome do serviço inválido");
+
+            if (nome.All(char.IsDigit))
+                throw new ServicoInvalidoException("Nome do serviço inválido");
+        }
+
+
     }
 }
      

@@ -9,13 +9,25 @@ namespace AutoFlow.Application.Validators
         public static Result? Validar(IServicoDTO servico)
         {
             if (string.IsNullOrWhiteSpace(servico.Nome))
-                return Result.Failure("Nome é obrigatório.", ErrorType.Validation);
+                return Result.Failure(
+                    "Nome é obrigatório.",
+                    ErrorType.Validation);
 
-            if (string.IsNullOrWhiteSpace(servico.Preco.ToString()))
-                return Result.Failure("Preço é obrigatório.", ErrorType.Validation);
+            if (servico.Nome.All(char.IsDigit))
+                return Result.Failure(
+                    "Nome do serviço inválido",
+                    ErrorType.Validation);
 
-            if (string.IsNullOrWhiteSpace(servico.TempoMedio.ToString()))
-                return Result.Failure("Tempo médio é obrigatório.", ErrorType.Validation);
+            if (servico.Preco <= 0)
+                return Result.Failure(
+                    "Preço deve ser maior que zero.",
+                    ErrorType.Validation);
+
+            if (servico.TempoMedio <= 0)
+                return Result.Failure(
+                    "Tempo médio deve ser maior que zero.",
+                    ErrorType.Validation);
+
 
             return null;
         }

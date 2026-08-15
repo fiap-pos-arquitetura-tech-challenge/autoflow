@@ -4,9 +4,6 @@ using AutoFlow.Application.Interfaces.Services;
 using AutoFlow.Application.Services.Enums;
 using AutoFlow.Application.Validators;
 using AutoFlow.Domain.Models;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace AutoFlow.Application.Services
 {
@@ -21,6 +18,15 @@ namespace AutoFlow.Application.Services
             if (validador is not null)
             {
                 return Result<ServicoDto>.Failure(validador.Error!, validador.ErrorType!);
+            }
+
+            var nome = servicoDto.Nome.Trim();
+
+            var servicoExistente = await _servicoRepositorio.ExistePorNomeAsync(nome);
+
+            if (servicoExistente)
+            {
+                return Result<ServicoDto>.Failure("Esse serviço já está cadastrado.", ErrorType.Validation);
             }
 
             var servico = new Servico(
@@ -53,6 +59,18 @@ namespace AutoFlow.Application.Services
             if (servico == null)
             {
                 return Result<ServicoDto>.Failure("Serviço não encontrado.", ErrorType.NotFound);
+            }
+
+            var nome = servicoDto.Nome.Trim();
+
+            var existe = await _servicoRepositorio
+                .ExistePorNomeAsync(nome, id);
+
+            if (existe)
+            {
+                return Result<ServicoDto>.Failure(
+                    "Esse serviço já está cadastrado.",
+                    ErrorType.Validation);
             }
 
             servico.Atualizar(
