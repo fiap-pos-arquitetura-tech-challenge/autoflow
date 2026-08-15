@@ -3,6 +3,7 @@ using AutoFlow.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AutoFlow.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260814003537_veiculoImplementacao")]
+    partial class veiculoImplementacao
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -29,9 +32,17 @@ namespace AutoFlow.Infrastructure.Persistence.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("varchar(100)");
+
                     b.Property<string>("Nome")
                         .IsRequired()
                         .HasColumnType("varchar(100)");
+
+                    b.Property<string>("Telefone")
+                        .IsRequired()
+                        .HasColumnType("varchar(15)");
 
                     b.HasKey("Id");
 
@@ -96,45 +107,6 @@ namespace AutoFlow.Infrastructure.Persistence.Migrations
 
                             b1.HasKey("ClienteId");
 
-                            b1.HasIndex("Numero")
-                                .IsUnique();
-
-                            b1.ToTable("Cliente");
-
-                            b1.WithOwner()
-                                .HasForeignKey("ClienteId");
-                        });
-
-                    b.OwnsOne("AutoFlow.Domain.ValueObjects.Email", "Email", b1 =>
-                        {
-                            b1.Property<int>("ClienteId")
-                                .HasColumnType("int");
-
-                            b1.Property<string>("Endereco")
-                                .IsRequired()
-                                .HasColumnType("varchar(100)")
-                                .HasColumnName("Email");
-
-                            b1.HasKey("ClienteId");
-
-                            b1.ToTable("Cliente");
-
-                            b1.WithOwner()
-                                .HasForeignKey("ClienteId");
-                        });
-
-                    b.OwnsOne("AutoFlow.Domain.ValueObjects.Telefone", "Telefone", b1 =>
-                        {
-                            b1.Property<int>("ClienteId")
-                                .HasColumnType("int");
-
-                            b1.Property<string>("Numero")
-                                .IsRequired()
-                                .HasColumnType("varchar(15)")
-                                .HasColumnName("Telefone");
-
-                            b1.HasKey("ClienteId");
-
                             b1.ToTable("Cliente");
 
                             b1.WithOwner()
@@ -142,12 +114,6 @@ namespace AutoFlow.Infrastructure.Persistence.Migrations
                         });
 
                     b.Navigation("Documento")
-                        .IsRequired();
-
-                    b.Navigation("Email")
-                        .IsRequired();
-
-                    b.Navigation("Telefone")
                         .IsRequired();
                 });
 

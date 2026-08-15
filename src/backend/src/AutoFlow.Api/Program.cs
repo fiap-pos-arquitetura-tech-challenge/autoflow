@@ -34,5 +34,10 @@ app.UseExceptionHandler();
 app.UseHttpsRedirection();
 
 app.MapClienteEndpoints();
+app.MapVeiculoEndpoints();
 
 app.Run();
+
+public partial class Program
+{
+}
