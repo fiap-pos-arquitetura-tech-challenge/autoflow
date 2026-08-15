@@ -9,6 +9,7 @@ namespace AutoFlow.Domain.Models
         public Documento Documento { get; private set; }
         public string Telefone { get; private set; }
         public string Email { get; private set; }
+        public ICollection<Veiculo> Veiculos { get; private set; } = new List<Veiculo>();
 
         public Cliente()
         {
