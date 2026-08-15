@@ -10,5 +10,6 @@ namespace AutoFlow.Application.Interfaces.Services
         public Task<Result> ExcluirAsync(int id);
         public Task<Result<ServicoDto>> ObterPorIdAsync(int id);
         public Task<IEnumerable<ServicoDto>> ObterTodosAsync();
+        Task<Result<ServicoDto>> ObterPorNomeAsync(string nome);
     }
 }

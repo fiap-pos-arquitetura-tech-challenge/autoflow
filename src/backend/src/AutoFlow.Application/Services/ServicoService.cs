@@ -131,6 +131,25 @@ namespace AutoFlow.Application.Services
                 s.TempoMedio
             ));
         }
+        public async Task<Result<ServicoDto>> ObterPorNomeAsync(string nome)
+        {
+            var servico = await _servicoRepositorio.ObterPorNomeAsync(nome);
+
+            if (servico == null)
+            {
+                return Result<ServicoDto>.Failure(
+                    "Serviço não encontrado.",
+                    ErrorType.NotFound);
+            }
+
+            return Result<ServicoDto>.Success(
+                new ServicoDto(
+                    servico.Id,
+                    servico.Nome,
+                    servico.Preco,
+                    servico.TempoMedio
+                ));
+        }
     }
 }
 

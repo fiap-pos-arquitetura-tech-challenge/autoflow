@@ -13,5 +13,10 @@ namespace AutoFlow.Infrastructure.Persistence.Repositories
                     s.Nome == nome &&
                     (!id.HasValue || s.Id != id.Value));
         }
+        public async Task<Servico?> ObterPorNomeAsync(string nome)
+        {
+            return await db.Set<Servico>()
+                .FirstOrDefaultAsync(s => s.Nome == nome);
+        }
     }
 }

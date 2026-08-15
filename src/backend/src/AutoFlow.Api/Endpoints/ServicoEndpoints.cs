@@ -26,6 +26,9 @@ namespace AutoFlow.Api.Endpoints
                 .Produces(StatusCodes.Status404NotFound);
             group.MapGet("/", ObterTodos)
                 .Produces<IEnumerable<ServicoDto>>(StatusCodes.Status200OK);
+            group.MapGet("/nome/{nome}", ObterPorNome)
+                .Produces<ServicoDto>(StatusCodes.Status200OK)
+                .Produces(StatusCodes.Status404NotFound);
             return app;
         }
 
@@ -69,6 +72,14 @@ namespace AutoFlow.Api.Endpoints
         {
             var servicos = await servicoService.ObterTodosAsync();
             return Results.Ok(servicos);
+        }
+
+        private static async Task<IResult> ObterPorNome(string nome,
+            IServicoService servicoService)
+        {
+            var result = await servicoService.ObterPorNomeAsync(nome);
+
+            return result.ToHttpResult();
         }
     }
 }
