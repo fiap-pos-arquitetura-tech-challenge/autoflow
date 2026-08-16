@@ -11,6 +11,8 @@ namespace AutoFlow.Api.Configuration
         {
             services.AddScoped<IClienteService, ClienteService>();
             services.AddScoped<IClienteRepositorio, ClienteRepositorio>();
+            services.AddScoped<IVeiculoService, VeiculoService>();
+            services.AddScoped<IVeiculoRepositorio, VeiculoRepositorio>();
 
             services.AddScoped<IServicoService, ServicoService>();
             services.AddScoped<IServicoRepositorio, ServicoRepositorio>();

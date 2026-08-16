@@ -30,6 +30,11 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.MapClienteEndpoints();
+app.MapVeiculoEndpoints();
 app.MapServicoEndpoints();
 
 app.Run();
+
+public partial class Program
+{
+}
