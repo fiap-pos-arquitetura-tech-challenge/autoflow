@@ -30,7 +30,7 @@ namespace AutoFlow.Application.Services
             }
 
             var servico = new Servico(
-                servicoDto.Nome,
+                nome,
                 servicoDto.Preco,
                 servicoDto.TempoMedio
             );
@@ -74,7 +74,7 @@ namespace AutoFlow.Application.Services
             }
 
             servico.Atualizar(
-                servicoDto.Nome,
+                nome,
                 servicoDto.Preco,
                 servicoDto.TempoMedio
             );
