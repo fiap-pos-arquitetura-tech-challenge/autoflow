@@ -35,6 +35,7 @@ app.UseHttpsRedirection();
 
 app.MapClienteEndpoints();
 app.MapVeiculoEndpoints();
+app.MapServicoEndpoints();
 
 app.Run();
 
