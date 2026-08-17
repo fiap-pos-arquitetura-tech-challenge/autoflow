@@ -1,6 +1,7 @@
 using AutoFlow.Api.Extensions;
 using AutoFlow.Application.Services;
 using AutoFlow.Application.Services.Enums;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace AutoFlow.UnitTests.Api.Extensions
@@ -20,14 +21,15 @@ namespace AutoFlow.UnitTests.Api.Extensions
         }
 
         [Fact]
-        public void ToCreatedHttpResult_ComFailureDeValidacao_DeveRetornarBadRequest()
+        public void ToCreatedHttpResult_ComFailureDeValidacao_DeveRetornarProblemComBadRequest()
         {
             var result = Result<string>.Failure("erro", ErrorType.Validation);
 
             var httpResult = result.ToCreatedHttpResult(v => $"/recursos/{v}");
 
-            var badRequest = Assert.IsType<BadRequest<string>>(httpResult);
-            Assert.Equal("erro", badRequest.Value);
+            var problem = Assert.IsType<ProblemHttpResult>(httpResult);
+            Assert.Equal(StatusCodes.Status400BadRequest, problem.ProblemDetails.Status);
+            Assert.Equal("erro", problem.ProblemDetails.Detail);
         }
 
         [Fact]
@@ -42,35 +44,38 @@ namespace AutoFlow.UnitTests.Api.Extensions
         }
 
         [Fact]
-        public void ToHttpResultGenerico_ComFailureNotFound_DeveRetornarNotFound()
+        public void ToHttpResultGenerico_ComFailureNotFound_DeveRetornarProblemComNotFound()
         {
             var result = Result<string>.Failure("não encontrado", ErrorType.NotFound);
 
             var httpResult = result.ToHttpResult();
 
-            var notFound = Assert.IsType<NotFound<string>>(httpResult);
-            Assert.Equal("não encontrado", notFound.Value);
+            var problem = Assert.IsType<ProblemHttpResult>(httpResult);
+            Assert.Equal(StatusCodes.Status404NotFound, problem.ProblemDetails.Status);
+            Assert.Equal("não encontrado", problem.ProblemDetails.Detail);
         }
 
         [Fact]
-        public void ToHttpResultGenerico_ComFailureConflict_DeveRetornarConflict()
+        public void ToHttpResultGenerico_ComFailureConflict_DeveRetornarProblemComConflict()
         {
             var result = Result<string>.Failure("conflito", ErrorType.Conflict);
 
             var httpResult = result.ToHttpResult();
 
-            var conflict = Assert.IsType<Conflict<string>>(httpResult);
-            Assert.Equal("conflito", conflict.Value);
+            var problem = Assert.IsType<ProblemHttpResult>(httpResult);
+            Assert.Equal(StatusCodes.Status409Conflict, problem.ProblemDetails.Status);
+            Assert.Equal("conflito", problem.ProblemDetails.Detail);
         }
 
         [Fact]
-        public void ToHttpResultGenerico_ComFailureSemTipoMapeado_DeveRetornarProblem()
+        public void ToHttpResultGenerico_ComFailureSemTipoMapeado_DeveRetornarProblemComInternalServerError()
         {
             var result = Result<string>.Failure("erro inesperado", ErrorType.None);
 
             var httpResult = result.ToHttpResult();
 
-            Assert.IsType<ProblemHttpResult>(httpResult);
+            var problem = Assert.IsType<ProblemHttpResult>(httpResult);
+            Assert.Equal(StatusCodes.Status500InternalServerError, problem.ProblemDetails.Status);
         }
 
         [Fact]
@@ -84,14 +89,15 @@ namespace AutoFlow.UnitTests.Api.Extensions
         }
 
         [Fact]
-        public void ToHttpResultNaoGenerico_ComFailureNotFound_DeveRetornarNotFound()
+        public void ToHttpResultNaoGenerico_ComFailureNotFound_DeveRetornarProblemComNotFound()
         {
             var result = Result.Failure("não encontrado", ErrorType.NotFound);
 
             var httpResult = result.ToHttpResult();
 
-            var notFound = Assert.IsType<NotFound<string>>(httpResult);
-            Assert.Equal("não encontrado", notFound.Value);
+            var problem = Assert.IsType<ProblemHttpResult>(httpResult);
+            Assert.Equal(StatusCodes.Status404NotFound, problem.ProblemDetails.Status);
+            Assert.Equal("não encontrado", problem.ProblemDetails.Detail);
         }
     }
 }

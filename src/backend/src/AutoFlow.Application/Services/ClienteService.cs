@@ -4,6 +4,7 @@ using AutoFlow.Application.Interfaces.Services;
 using AutoFlow.Application.Services.Enums;
 using AutoFlow.Application.Validators;
 using AutoFlow.Domain.Models;
+using AutoFlow.Domain.ValueObjects;
 
 namespace AutoFlow.Application.Services
 {
@@ -27,14 +28,21 @@ namespace AutoFlow.Application.Services
                 clienteDto.Email
             );
 
+            var clienteComMesmoDocumento = await _clienteRepositorio.ObterPorDocumentoAsync(cliente.Documento.Numero);
+
+            if (clienteComMesmoDocumento != null)
+            {
+                return Result<ClienteDto>.Failure("Já existe um cliente cadastrado com este documento.", ErrorType.Conflict);
+            }
+
             await _clienteRepositorio.AdicionarAsync(cliente);
 
             return Result<ClienteDto>.Success(new ClienteDto(
                 cliente.Id,
                 cliente.Nome,
                 cliente.Documento.Numero,
-                cliente.Telefone,
-                cliente.Email
+                cliente.Telefone.Numero,
+                cliente.Email.Endereco
             ));
         }
 
@@ -54,6 +62,14 @@ namespace AutoFlow.Application.Services
                 return Result<ClienteDto>.Failure("Cliente não encontrado.", ErrorType.NotFound);
             }
 
+            var documentoNormalizado = new Documento(clienteDto.Documento).Numero;
+            var clienteComMesmoDocumento = await _clienteRepositorio.ObterPorDocumentoAsync(documentoNormalizado);
+
+            if (clienteComMesmoDocumento != null && clienteComMesmoDocumento.Id != id)
+            {
+                return Result<ClienteDto>.Failure("Já existe um cliente cadastrado com este documento.", ErrorType.Conflict);
+            }
+
             cliente.Atualizar(
                 clienteDto.Nome,
                 clienteDto.Documento,
@@ -67,8 +83,8 @@ namespace AutoFlow.Application.Services
                 cliente.Id,
                 cliente.Nome,
                 cliente.Documento.Numero,
-                cliente.Telefone,
-                cliente.Email
+                cliente.Telefone.Numero,
+                cliente.Email.Endereco
             ));
         }
 
@@ -99,8 +115,8 @@ namespace AutoFlow.Application.Services
                 cliente.Id,
                 cliente.Nome,
                 cliente.Documento.Numero,
-                cliente.Telefone,
-                cliente.Email
+                cliente.Telefone.Numero,
+                cliente.Email.Endereco
             ));
         }
 
@@ -112,8 +128,8 @@ namespace AutoFlow.Application.Services
                 c.Id,
                 c.Nome,
                 c.Documento.Numero,
-                c.Telefone,
-                c.Email
+                c.Telefone.Numero,
+                c.Email.Endereco
             ));
         }
     }

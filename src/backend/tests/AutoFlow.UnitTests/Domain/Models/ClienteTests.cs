@@ -6,7 +6,7 @@ namespace AutoFlow.UnitTests.Domain.Models
     public class ClienteTests
     {
         private const string NomeValido = "João da Silva";
-        private const string DocumentoValidoCpf = "12345678901";
+        private const string DocumentoValidoCpf = "11144477735";
         private const string TelefoneValido = "11999999999";
         private const string EmailValido = "joao@email.com";
 
@@ -17,8 +17,8 @@ namespace AutoFlow.UnitTests.Domain.Models
 
             Assert.Equal(NomeValido, cliente.Nome);
             Assert.Equal(DocumentoValidoCpf, cliente.Documento.Numero);
-            Assert.Equal(TelefoneValido, cliente.Telefone);
-            Assert.Equal(EmailValido, cliente.Email);
+            Assert.Equal(TelefoneValido, cliente.Telefone.Numero);
+            Assert.Equal(EmailValido, cliente.Email.Endereco);
         }
 
         [Fact]
@@ -48,9 +48,9 @@ namespace AutoFlow.UnitTests.Domain.Models
         [InlineData(null)]
         [InlineData("")]
         [InlineData("   ")]
-        public void Construtor_ComTelefoneInvalido_DeveLancarClienteInvalidoException(string? telefoneInvalido)
+        public void Construtor_ComTelefoneInvalido_DeveLancarTelefoneInvalidoException(string? telefoneInvalido)
         {
-            var exception = Assert.Throws<ClienteInvalidoException>(
+            var exception = Assert.Throws<TelefoneInvalidoException>(
                 () => new Cliente(NomeValido, DocumentoValidoCpf, telefoneInvalido!, EmailValido));
 
             Assert.Equal("Telefone é obrigatório.", exception.Message);
@@ -60,9 +60,9 @@ namespace AutoFlow.UnitTests.Domain.Models
         [InlineData(null)]
         [InlineData("")]
         [InlineData("   ")]
-        public void Construtor_ComEmailInvalido_DeveLancarClienteInvalidoException(string? emailInvalido)
+        public void Construtor_ComEmailInvalido_DeveLancarEmailInvalidoException(string? emailInvalido)
         {
-            var exception = Assert.Throws<ClienteInvalidoException>(
+            var exception = Assert.Throws<EmailInvalidoException>(
                 () => new Cliente(NomeValido, DocumentoValidoCpf, TelefoneValido, emailInvalido!));
 
             Assert.Equal("Email é obrigatório.", exception.Message);
@@ -81,7 +81,7 @@ namespace AutoFlow.UnitTests.Domain.Models
             var cliente = new Cliente(NomeValido, DocumentoValidoCpf, TelefoneValido, EmailValido);
 
             const string novoNome = "Maria Souza";
-            const string novoDocumento = "12345678000199";
+            const string novoDocumento = "11222333000181";
             const string novoTelefone = "11888888888";
             const string novoEmail = "maria@email.com";
 
@@ -89,8 +89,8 @@ namespace AutoFlow.UnitTests.Domain.Models
 
             Assert.Equal(novoNome, cliente.Nome);
             Assert.Equal(novoDocumento, cliente.Documento.Numero);
-            Assert.Equal(novoTelefone, cliente.Telefone);
-            Assert.Equal(novoEmail, cliente.Email);
+            Assert.Equal(novoTelefone, cliente.Telefone.Numero);
+            Assert.Equal(novoEmail, cliente.Email.Endereco);
         }
 
         [Fact]
