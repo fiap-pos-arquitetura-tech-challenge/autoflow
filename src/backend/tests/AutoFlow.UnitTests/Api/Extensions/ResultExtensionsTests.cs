@@ -68,6 +68,18 @@ namespace AutoFlow.UnitTests.Api.Extensions
         }
 
         [Fact]
+        public void ToHttpResultGenerico_ComFailureUnauthorized_DeveRetornarProblemComUnauthorized()
+        {
+            var result = Result<string>.Failure("credenciais inválidas", ErrorType.Unauthorized);
+
+            var httpResult = result.ToHttpResult();
+
+            var problem = Assert.IsType<ProblemHttpResult>(httpResult);
+            Assert.Equal(StatusCodes.Status401Unauthorized, problem.ProblemDetails.Status);
+            Assert.Equal("credenciais inválidas", problem.ProblemDetails.Detail);
+        }
+
+        [Fact]
         public void ToHttpResultGenerico_ComFailureSemTipoMapeado_DeveRetornarProblemComInternalServerError()
         {
             var result = Result<string>.Failure("erro inesperado", ErrorType.None);

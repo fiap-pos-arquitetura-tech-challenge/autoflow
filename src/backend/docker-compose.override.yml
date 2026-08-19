@@ -5,6 +5,10 @@ services:
       - ASPNETCORE_HTTP_PORTS=8080
       - ASPNETCORE_HTTPS_PORTS=8081
       - 'ConnectionStrings:DefaultConnection=Server=sqlserver;Database=AutoFlow;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True'
+      - 'Jwt__Secret=DevOnlySecretKeyForLocalDockerUseOnly_ChangeMe_32Bytes!'
+      - 'Bootstrap__Colaborador__Nome=${AUTOFLOW_BOOTSTRAP_NOME:-Administrador AutoFlow}'
+      - 'Bootstrap__Colaborador__Email=${AUTOFLOW_BOOTSTRAP_EMAIL:-colaborador@autoflow.local}'
+      - 'Bootstrap__Colaborador__Senha=${AUTOFLOW_BOOTSTRAP_SENHA:-DevOnly@123456}'
     ports:
       - "8080"
       - "8081"
