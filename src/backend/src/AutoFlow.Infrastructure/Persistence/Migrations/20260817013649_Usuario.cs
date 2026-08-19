@@ -44,12 +44,6 @@ namespace AutoFlow.Infrastructure.Persistence.Migrations
                 column: "Email",
                 unique: true);
 
-            // Seed do primeiro Colaborador (bootstrap), já que o cadastro de novos
-            // Colaboradores exige um Colaborador autenticado. Senha: AutoFlow@2026
-            migrationBuilder.InsertData(
-                table: "Usuario",
-                columns: ["Nome", "Email", "SenhaHash", "SenhaSalt", "Perfil", "ClienteId"],
-                values: ["Administrador AutoFlow", "colaborador@autoflow.com", "7j3GOh7K389/Yo3kvsjKB7Ty1oIziKzD74+nxATSCQ8=", "B0tZVtVpUAeRy0+KGFYIjA==", "Colaborador", null]);
         }
 
         /// <inheritdoc />

@@ -19,6 +19,7 @@ namespace AutoFlow.Application.DTOs
 
     public record AtivaAcessoClienteDto(
         string Documento,
+        string Email,
         string Senha
     );
 

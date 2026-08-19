@@ -2,7 +2,6 @@ using AutoFlow.Api.Extensions;
 using AutoFlow.Application.DTOs;
 using AutoFlow.Application.Interfaces.Services;
 using AutoFlow.Domain.Enums;
-using Microsoft.AspNetCore.Authorization;
 
 namespace AutoFlow.Api.Endpoints
 {

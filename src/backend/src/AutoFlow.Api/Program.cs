@@ -1,13 +1,8 @@
-using System.Text;
 using AutoFlow.Api.Configuration;
 using AutoFlow.Api.Endpoints;
 using AutoFlow.Api.Middlewares;
 using AutoFlow.Api.OpenApi;
 using AutoFlow.Infrastructure;
-using AutoFlow.Infrastructure.Persistence;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -34,9 +29,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.MapScalarApiReference();
 
-    using var scope = app.Services.CreateScope();
-    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    dbContext.Database.Migrate();
+    await app.Services.ApplyMigrationsAndSeedAsync();
 }
 
 app.UseExceptionHandler();

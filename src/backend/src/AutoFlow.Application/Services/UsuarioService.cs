@@ -58,6 +58,11 @@ namespace AutoFlow.Application.Services
                 return Result<UsuarioDto>.Failure("Cliente não encontrado.", ErrorType.NotFound);
             }
 
+            if (!string.Equals(cliente.Email.Endereco, ativaAcessoDto.Email, StringComparison.OrdinalIgnoreCase))
+            {
+                return Result<UsuarioDto>.Failure("Cliente não encontrado.", ErrorType.NotFound);
+            }
+
             var usuarioComMesmoEmail = await _usuarioRepositorio.ObterPorEmailAsync(cliente.Email.Endereco);
 
             if (usuarioComMesmoEmail != null)

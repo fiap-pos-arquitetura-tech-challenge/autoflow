@@ -11,6 +11,9 @@ namespace AutoFlow.Application.Validators
             if (string.IsNullOrWhiteSpace(dto.Documento))
                 return Result.Failure("Documento é obrigatório.", ErrorType.Validation);
 
+            if (string.IsNullOrWhiteSpace(dto.Email))
+                return Result.Failure("Email é obrigatório.", ErrorType.Validation);
+
             if (string.IsNullOrWhiteSpace(dto.Senha))
                 return Result.Failure("Senha é obrigatória.", ErrorType.Validation);
 

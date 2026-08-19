@@ -71,7 +71,7 @@ namespace AutoFlow.UnitTests.Application.Services
         public async Task AtivarAcessoClienteAsync_ComClienteExistente_DeveAdicionarERetornarSucesso()
         {
             var cliente = ClienteValido();
-            var dto = new AtivaAcessoClienteDto(cliente.Documento.Numero, "SenhaForte@123");
+            var dto = new AtivaAcessoClienteDto(cliente.Documento.Numero, cliente.Email.Endereco, "SenhaForte@123");
 
             _clienteRepositorioMock.Setup(r => r.ObterPorDocumentoAsync(dto.Documento)).ReturnsAsync(cliente);
 
@@ -87,7 +87,7 @@ namespace AutoFlow.UnitTests.Application.Services
         [Fact]
         public async Task AtivarAcessoClienteAsync_ComDocumentoInexistente_DeveRetornarFailureNotFound()
         {
-            var dto = new AtivaAcessoClienteDto("11144477735", "SenhaForte@123");
+            var dto = new AtivaAcessoClienteDto("11144477735", "cliente@email.com", "SenhaForte@123");
 
             _clienteRepositorioMock.Setup(r => r.ObterPorDocumentoAsync(dto.Documento)).ReturnsAsync((Cliente?)null);
 
@@ -103,7 +103,7 @@ namespace AutoFlow.UnitTests.Application.Services
         public async Task AtivarAcessoClienteAsync_ComAcessoJaAtivado_DeveRetornarFailureConflictSemAdicionar()
         {
             var cliente = ClienteValido();
-            var dto = new AtivaAcessoClienteDto(cliente.Documento.Numero, "SenhaForte@123");
+            var dto = new AtivaAcessoClienteDto(cliente.Documento.Numero, cliente.Email.Endereco, "SenhaForte@123");
 
             _clienteRepositorioMock.Setup(r => r.ObterPorDocumentoAsync(dto.Documento)).ReturnsAsync(cliente);
             _usuarioRepositorioMock.Setup(r => r.ObterPorEmailAsync(cliente.Email.Endereco))
@@ -114,6 +114,22 @@ namespace AutoFlow.UnitTests.Application.Services
             Assert.False(resultado.IsSuccess);
             Assert.Equal("Acesso já foi ativado para este cliente.", resultado.Error);
             Assert.Equal(ErrorType.Conflict, resultado.ErrorType);
+            _usuarioRepositorioMock.Verify(r => r.AdicionarAsync(It.IsAny<Usuario>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task AtivarAcessoClienteAsync_ComEmailDiferenteDoCliente_DeveRetornarFailureNotFoundSemAdicionar()
+        {
+            var cliente = ClienteValido();
+            var dto = new AtivaAcessoClienteDto(cliente.Documento.Numero, "outro@email.com", "SenhaForte@123");
+
+            _clienteRepositorioMock.Setup(r => r.ObterPorDocumentoAsync(dto.Documento)).ReturnsAsync(cliente);
+
+            var resultado = await _service.AtivarAcessoClienteAsync(dto);
+
+            Assert.False(resultado.IsSuccess);
+            Assert.Equal("Cliente não encontrado.", resultado.Error);
+            Assert.Equal(ErrorType.NotFound, resultado.ErrorType);
             _usuarioRepositorioMock.Verify(r => r.AdicionarAsync(It.IsAny<Usuario>()), Times.Never);
         }
 
