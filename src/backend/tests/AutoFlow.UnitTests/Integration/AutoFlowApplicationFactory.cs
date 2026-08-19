@@ -13,6 +13,13 @@ public class AutoFlowApplicationFactory : WebApplicationFactory<Program>
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        // Program.cs lê Jwt:Secret direto de builder.Configuration antes do Build(),
+        // então precisa estar disponível como variável de ambiente antes do host ser criado
+        // (ConfigureAppConfiguration/ConfigureServices só se aplicam depois desse ponto).
+        Environment.SetEnvironmentVariable("Jwt__Secret", "TestingOnlySecretKey_MustBeAtLeast32BytesLong!");
+        Environment.SetEnvironmentVariable("Jwt__Issuer", "AutoFlow.Api.Testing");
+        Environment.SetEnvironmentVariable("Jwt__Audience", "AutoFlow.Client.Testing");
+
         builder.UseEnvironment("Testing");
 
         builder.ConfigureServices(services =>

@@ -1,6 +1,7 @@
 ﻿using AutoFlow.Api.Extensions;
 using AutoFlow.Application.DTOs;
 using AutoFlow.Application.Interfaces.Services;
+using AutoFlow.Domain.Enums;
 
 namespace AutoFlow.Api.Endpoints
 {
@@ -9,22 +10,23 @@ namespace AutoFlow.Api.Endpoints
         public static IEndpointRouteBuilder MapClienteEndpoints(this IEndpointRouteBuilder app)
         {
             var group = app.MapGroup("/api/clientes")
+                .RequireAuthorization(policy => policy.RequireRole(nameof(Perfil.Colaborador)))
                 .WithTags("Clientes");
 
-            app.MapPost("/", Adicionar)
+            group.MapPost("/", Adicionar)
                 .Produces<ClienteDto>(StatusCodes.Status201Created)
                 .Produces(StatusCodes.Status400BadRequest);
-            app.MapPut("/{id:int}", Atualizar)
+            group.MapPut("/{id:int}", Atualizar)
                 .Produces<ClienteDto>(StatusCodes.Status200OK)
                 .Produces(StatusCodes.Status400BadRequest)
                 .Produces(StatusCodes.Status404NotFound);
-            app.MapDelete("/{id:int}", Excluir)
+            group.MapDelete("/{id:int}", Excluir)
                 .Produces(StatusCodes.Status204NoContent)
                 .Produces(StatusCodes.Status404NotFound);
-            app.MapGet("/{id:int}", ObterPorId)
+            group.MapGet("/{id:int}", ObterPorId)
                 .Produces<ClienteDto>(StatusCodes.Status200OK)
                 .Produces(StatusCodes.Status404NotFound);
-            app.MapGet("/", ObterTodos)
+            group.MapGet("/", ObterTodos)
                 .Produces<IEnumerable<ClienteDto>>(StatusCodes.Status200OK);
             return app;
         }

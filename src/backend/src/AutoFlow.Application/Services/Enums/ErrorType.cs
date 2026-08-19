@@ -5,6 +5,7 @@
         None,
         Validation,
         NotFound,
-        Conflict
+        Conflict,
+        Unauthorized
     }
 }
