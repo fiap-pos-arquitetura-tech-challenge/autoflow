@@ -37,10 +37,11 @@ app.UseHttpsRedirection();
 
 app.UseSecurityConfiguration();
 
-app.MapClienteEndpoints();
-app.MapVeiculoEndpoints();
-app.MapUsuarioEndpoints();
 app.MapAuthEndpoints();
+app.MapClienteEndpoints();
+app.MapServicoEndpoints();
+app.MapUsuarioEndpoints();
+app.MapVeiculoEndpoints();
 
 app.Run();
 

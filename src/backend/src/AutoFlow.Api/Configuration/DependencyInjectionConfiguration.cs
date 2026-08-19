@@ -18,6 +18,9 @@ namespace AutoFlow.Api.Configuration
             services.AddScoped<IUsuarioRepositorio, UsuarioRepositorio>();
             services.AddScoped<ITokenService, TokenService>();
 
+            services.AddScoped<IServicoService, ServicoService>();
+            services.AddScoped<IServicoRepositorio, ServicoRepositorio>();
+
             return services;
         }
     }
