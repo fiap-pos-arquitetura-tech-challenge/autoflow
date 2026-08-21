@@ -63,6 +63,7 @@ public class Estoque : BaseModel
         }
 
         Quantidade = new Quantidade(quantidade);
+
     }
 
     private static void ValidarQuantidadeMovimentacao(
