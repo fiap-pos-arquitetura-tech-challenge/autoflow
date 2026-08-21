@@ -21,12 +21,13 @@ namespace AutoFlow.Api.Configuration
             services.AddScoped<IServicoService, ServicoService>();
             services.AddScoped<IServicoRepositorio, ServicoRepositorio>();
 
-        services.AddScoped<IPecaInsumoService, PecaInsumoService>();
-        services.AddScoped<IPecaInsumoRepositorio, PecaInsumoRepositorio>();
+            services.AddScoped<IPecaInsumoService, PecaInsumoService>();
+            services.AddScoped<IPecaInsumoRepositorio, PecaInsumoRepositorio>();
 
-        services.AddScoped<IEstoqueService, EstoqueService>();
-        services.AddScoped<IEstoqueRepositorio, EstoqueRepositorio>();
+            services.AddScoped<IEstoqueService, EstoqueService>();
+            services.AddScoped<IEstoqueRepositorio, EstoqueRepositorio>();
 
-        return services;
+            return services;
+        }
     }
 }
