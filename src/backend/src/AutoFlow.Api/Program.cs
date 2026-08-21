@@ -43,6 +43,10 @@ app.MapServicoEndpoints();
 app.MapUsuarioEndpoints();
 app.MapVeiculoEndpoints();
 
+app.MapPecaInsumoEndpoints();
+
+app.MapEstoqueEndpoints();
+
 app.Run();
 
 public partial class Program

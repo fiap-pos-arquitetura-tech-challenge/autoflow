@@ -134,6 +134,42 @@ namespace AutoFlow.Infrastructure.Persistence.Migrations
                     b.ToTable("Servico", (string)null);
                 });
 
+            modelBuilder.Entity("AutoFlow.Domain.Models.Estoque", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("PecaInsumoId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PecaInsumoId")
+                        .IsUnique();
+
+                    b.ToTable("Estoque", (string)null);
+                });
+
+            modelBuilder.Entity("AutoFlow.Domain.Models.PecaInsumo", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasColumnType("varchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PecaInsumo", (string)null);
+                });
+
             modelBuilder.Entity("AutoFlow.Domain.Models.Cliente", b =>
                 {
                     b.OwnsOne("AutoFlow.Domain.ValueObjects.Email", "Email", b1 =>
@@ -338,6 +374,61 @@ namespace AutoFlow.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("AutoFlow.Domain.Models.Cliente", b =>
                 {
                     b.Navigation("Veiculos");
+                });
+
+            modelBuilder.Entity("AutoFlow.Domain.Models.Estoque", b =>
+                {
+                    b.HasOne("AutoFlow.Domain.Models.PecaInsumo", "PecaInsumo")
+                        .WithOne()
+                        .HasForeignKey("AutoFlow.Domain.Models.Estoque", "PecaInsumoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsOne("AutoFlow.Domain.ValueObjects.Comum.Quantidade", "Quantidade", b1 =>
+                        {
+                            b1.Property<int>("EstoqueId")
+                                .HasColumnType("int");
+
+                            b1.Property<int>("Valor")
+                                .HasColumnType("int")
+                                .HasColumnName("Quantidade");
+
+                            b1.HasKey("EstoqueId");
+
+                            b1.ToTable("Estoque");
+
+                            b1.WithOwner()
+                                .HasForeignKey("EstoqueId");
+                        });
+
+                    b.Navigation("PecaInsumo");
+
+                    b.Navigation("Quantidade")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("AutoFlow.Domain.Models.PecaInsumo", b =>
+                {
+                    b.OwnsOne("AutoFlow.Domain.ValueObjects.Dinheiro", "Valor", b1 =>
+                        {
+                            b1.Property<int>("PecaInsumoId")
+                                .HasColumnType("int");
+
+                            b1.Property<decimal>("Valor")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("Valor");
+
+                            b1.HasKey("PecaInsumoId");
+
+                            b1.ToTable("PecaInsumo");
+
+                            b1.WithOwner()
+                                .HasForeignKey("PecaInsumoId");
+                        });
+
+                    b.Navigation("Valor")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }
