@@ -2,16 +2,24 @@
 using AutoFlow.Application.Interfaces.Services;
 using AutoFlow.Application.Services;
 using AutoFlow.Infrastructure.Persistence.Repositories;
+using AutoFlow.Infrastructure.Security;
 
-namespace AutoFlow.Api.Configuration;
-
-public static class DependencyInjectionConfiguration
+namespace AutoFlow.Api.Configuration
 {
-    public static IServiceCollection ResolveDependencies(
-        this IServiceCollection services)
+    public static class DependencyInjectionConfiguration
     {
-        services.AddScoped<IClienteService, ClienteService>();
-        services.AddScoped<IClienteRepositorio, ClienteRepositorio>();
+        public static IServiceCollection ResolveDependencies(this IServiceCollection services)
+        {
+            services.AddScoped<IClienteService, ClienteService>();
+            services.AddScoped<IClienteRepositorio, ClienteRepositorio>();
+            services.AddScoped<IVeiculoService, VeiculoService>();
+            services.AddScoped<IVeiculoRepositorio, VeiculoRepositorio>();
+            services.AddScoped<IUsuarioService, UsuarioService>();
+            services.AddScoped<IUsuarioRepositorio, UsuarioRepositorio>();
+            services.AddScoped<ITokenService, TokenService>();
+
+            services.AddScoped<IServicoService, ServicoService>();
+            services.AddScoped<IServicoRepositorio, ServicoRepositorio>();
 
         services.AddScoped<IPecaInsumoService, PecaInsumoService>();
         services.AddScoped<IPecaInsumoRepositorio, PecaInsumoRepositorio>();

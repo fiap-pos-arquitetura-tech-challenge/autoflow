@@ -16,7 +16,7 @@ namespace AutoFlow.Infrastructure.Persistence.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.0")
+                .HasAnnotation("ProductVersion", "10.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -29,21 +29,109 @@ namespace AutoFlow.Infrastructure.Persistence.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Email")
+                    b.Property<string>("Nome")
                         .IsRequired()
                         .HasColumnType("varchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Cliente", (string)null);
+                });
+
+            modelBuilder.Entity("AutoFlow.Domain.Models.Usuario", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("ClienteId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Nome")
                         .IsRequired()
                         .HasColumnType("varchar(100)");
 
-                    b.Property<string>("Telefone")
+                    b.Property<string>("Perfil")
                         .IsRequired()
-                        .HasColumnType("varchar(15)");
+                        .HasColumnType("varchar(20)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Cliente", (string)null);
+                    b.HasIndex("ClienteId");
+
+                    b.ToTable("Usuario", (string)null);
+                });
+
+            modelBuilder.Entity("AutoFlow.Domain.Models.Veiculo", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AnoFabricacao")
+                        .HasColumnType("int");
+
+                    b.Property<int>("AnoModelo")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ClienteId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Combustivel")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Cor")
+                        .IsRequired()
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<string>("Marca")
+                        .IsRequired()
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<string>("Modelo")
+                        .IsRequired()
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClienteId");
+
+                    b.ToTable("Veiculos", (string)null);
+                });
+
+            modelBuilder.Entity("AutoFlow.Domain.Models.Servico", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<decimal>("Preco")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<int>("TempoMedio")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Nome")
+                        .IsUnique();
+
+                    b.ToTable("Servico", (string)null);
                 });
 
             modelBuilder.Entity("AutoFlow.Domain.Models.Estoque", b =>
@@ -84,6 +172,24 @@ namespace AutoFlow.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("AutoFlow.Domain.Models.Cliente", b =>
                 {
+                    b.OwnsOne("AutoFlow.Domain.ValueObjects.Email", "Email", b1 =>
+                        {
+                            b1.Property<int>("ClienteId")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("Endereco")
+                                .IsRequired()
+                                .HasColumnType("varchar(100)")
+                                .HasColumnName("Email");
+
+                            b1.HasKey("ClienteId");
+
+                            b1.ToTable("Cliente");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ClienteId");
+                        });
+
                     b.OwnsOne("AutoFlow.Domain.ValueObjects.Documento", "Documento", b1 =>
                         {
                             b1.Property<int>("ClienteId")
@@ -96,6 +202,27 @@ namespace AutoFlow.Infrastructure.Persistence.Migrations
 
                             b1.HasKey("ClienteId");
 
+                            b1.HasIndex("Numero")
+                                .IsUnique();
+
+                            b1.ToTable("Cliente");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ClienteId");
+                        });
+
+                    b.OwnsOne("AutoFlow.Domain.ValueObjects.Telefone", "Telefone", b1 =>
+                        {
+                            b1.Property<int>("ClienteId")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("Numero")
+                                .IsRequired()
+                                .HasColumnType("varchar(15)")
+                                .HasColumnName("Telefone");
+
+                            b1.HasKey("ClienteId");
+
                             b1.ToTable("Cliente");
 
                             b1.WithOwner()
@@ -104,6 +231,149 @@ namespace AutoFlow.Infrastructure.Persistence.Migrations
 
                     b.Navigation("Documento")
                         .IsRequired();
+
+                    b.Navigation("Email")
+                        .IsRequired();
+
+                    b.Navigation("Telefone")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("AutoFlow.Domain.Models.Usuario", b =>
+                {
+                    b.HasOne("AutoFlow.Domain.Models.Cliente", null)
+                        .WithMany()
+                        .HasForeignKey("ClienteId");
+
+                    b.OwnsOne("AutoFlow.Domain.ValueObjects.Email", "Email", b1 =>
+                        {
+                            b1.Property<int>("UsuarioId")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("Endereco")
+                                .IsRequired()
+                                .HasColumnType("varchar(100)")
+                                .HasColumnName("Email");
+
+                            b1.HasKey("UsuarioId");
+
+                            b1.HasIndex("Endereco")
+                                .IsUnique();
+
+                            b1.ToTable("Usuario");
+
+                            b1.WithOwner()
+                                .HasForeignKey("UsuarioId");
+                        });
+
+                    b.OwnsOne("AutoFlow.Domain.ValueObjects.Senha", "Senha", b1 =>
+                        {
+                            b1.Property<int>("UsuarioId")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("Hash")
+                                .IsRequired()
+                                .HasColumnType("varchar(100)")
+                                .HasColumnName("SenhaHash");
+
+                            b1.Property<string>("Salt")
+                                .IsRequired()
+                                .HasColumnType("varchar(50)")
+                                .HasColumnName("SenhaSalt");
+
+                            b1.HasKey("UsuarioId");
+
+                            b1.ToTable("Usuario");
+
+                            b1.WithOwner()
+                                .HasForeignKey("UsuarioId");
+                        });
+
+                    b.Navigation("Email")
+                        .IsRequired();
+
+                    b.Navigation("Senha")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("AutoFlow.Domain.Models.Veiculo", b =>
+                {
+                    b.HasOne("AutoFlow.Domain.Models.Cliente", "Cliente")
+                        .WithMany("Veiculos")
+                        .HasForeignKey("ClienteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsOne("AutoFlow.Domain.ValueObjects.Chassi", "Chassi", b1 =>
+                        {
+                            b1.Property<int>("VeiculoId")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("Valor")
+                                .IsRequired()
+                                .HasMaxLength(17)
+                                .HasColumnType("nvarchar(17)")
+                                .HasColumnName("Chassi");
+
+                            b1.HasKey("VeiculoId");
+
+                            b1.ToTable("Veiculos");
+
+                            b1.WithOwner()
+                                .HasForeignKey("VeiculoId");
+                        });
+
+                    b.OwnsOne("AutoFlow.Domain.ValueObjects.Placa", "Placa", b1 =>
+                        {
+                            b1.Property<int>("VeiculoId")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("Valor")
+                                .IsRequired()
+                                .HasMaxLength(8)
+                                .HasColumnType("nvarchar(8)")
+                                .HasColumnName("Placa");
+
+                            b1.HasKey("VeiculoId");
+
+                            b1.ToTable("Veiculos");
+
+                            b1.WithOwner()
+                                .HasForeignKey("VeiculoId");
+                        });
+
+                    b.OwnsOne("AutoFlow.Domain.ValueObjects.Quilometragem", "Quilometragem", b1 =>
+                        {
+                            b1.Property<int>("VeiculoId")
+                                .HasColumnType("int");
+
+                            b1.Property<int>("Valor")
+                                .HasColumnType("int")
+                                .HasColumnName("Quilometragem");
+
+                            b1.HasKey("VeiculoId");
+
+                            b1.ToTable("Veiculos");
+
+                            b1.WithOwner()
+                                .HasForeignKey("VeiculoId");
+                        });
+
+                    b.Navigation("Chassi")
+                        .IsRequired();
+
+                    b.Navigation("Cliente");
+
+                    b.Navigation("Placa")
+                        .IsRequired();
+
+                    b.Navigation("Quilometragem")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("AutoFlow.Domain.Models.Cliente", b =>
+                {
+                    b.Navigation("Veiculos");
                 });
 
             modelBuilder.Entity("AutoFlow.Domain.Models.Estoque", b =>
