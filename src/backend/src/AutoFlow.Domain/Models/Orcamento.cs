@@ -5,6 +5,7 @@ namespace AutoFlow.Domain.Models
 {
     public class Orcamento : BaseModel
     {
+        public int OrdemServicoId { get; private set; }
         public StatusOrcamento Status { get; private set; }
         public decimal ValorServicos { get; private set; }
         public decimal ValorPecas { get; private set; }

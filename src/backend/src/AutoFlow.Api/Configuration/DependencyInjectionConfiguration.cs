@@ -27,6 +27,9 @@ namespace AutoFlow.Api.Configuration
             services.AddScoped<IEstoqueService, EstoqueService>();
             services.AddScoped<IEstoqueRepositorio, EstoqueRepositorio>();
 
+            services.AddScoped<IOrdemServicoService, OrdemServicoService>();
+            services.AddScoped<IOrdemServicoRepositorio, OrdemServicoRepositorio>();
+
             return services;
         }
     }

@@ -186,5 +186,35 @@ namespace AutoFlow.UnitTests.Domain.Models
             Assert.Throws<OrdemServicoInvalidaException>(() =>
                 ordemServico.Entregar());
         }
+
+        [Fact]
+        public void GerarNovoOrcamento_AposReprovacao_DeveLimparDataDaDecisaoAnterior()
+        {
+            var ordemServico = CriarOrdemServicoAguardandoAprovacao();
+            ordemServico.ReprovarOrcamento("Valor acima do esperado.");
+
+            Assert.NotNull(ordemServico.OrcamentoDecididoEm);
+
+            ordemServico.GerarOrcamento();
+
+            Assert.Equal(StatusOrdemServico.AguardandoAprovacao, ordemServico.Status);
+            Assert.Equal(StatusOrcamento.Pendente, ordemServico.Orcamento!.Status);
+            Assert.Null(ordemServico.OrcamentoDecididoEm);
+        }
+
+        [Fact]
+        public void IniciarEFinalizarExecucaoServico_EmExecucao_DeveRegistrarDatasNoItem()
+        {
+            var ordemServico = CriarOrdemServicoAguardandoAprovacao();
+            var item = Assert.Single(ordemServico.Servicos);
+            item.Id = 25;
+            ordemServico.AprovarOrcamento();
+
+            ordemServico.IniciarExecucaoServico(25);
+            ordemServico.FinalizarExecucaoServico(25);
+
+            Assert.NotNull(item.ExecucaoIniciadaEm);
+            Assert.NotNull(item.ExecucaoFinalizadaEm);
+        }
     }
 }
