@@ -15,6 +15,8 @@ namespace AutoFlow.Application.Interfaces.Services
         Task<Result<OrdemServicoDto>> RemoverPecaAsync(int id, int pecaId);
         Task<Result<OrdemServicoDto>> GerarOrcamentoAsync(int id);
         Task<Result<OrdemServicoDto>> AprovarOrcamentoAsync(int id);
+        Task<Result<OrdemServicoDto>> IniciarExecucaoServicoAsync(int id, int itemServicoId);
+        Task<Result<OrdemServicoDto>> FinalizarExecucaoServicoAsync(int id, int itemServicoId);
         Task<Result<OrdemServicoDto>> ReprovarOrcamentoAsync(int id, ReprovaOrcamentoOrdemServicoDto dto);
         Task<Result<OrdemServicoDto>> FinalizarAsync(int id);
         Task<Result<OrdemServicoDto>> EntregarAsync(int id);

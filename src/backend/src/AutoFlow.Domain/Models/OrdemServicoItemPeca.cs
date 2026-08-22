@@ -4,6 +4,7 @@ namespace AutoFlow.Domain.Models
 {
     public class OrdemServicoItemPeca : BaseModel
     {
+        public int OrdemServicoId { get; private set; }
         public int PecaId { get; private set; }
         public string Descricao { get; private set; }
         public int Quantidade { get; private set; }

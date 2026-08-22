@@ -179,6 +179,69 @@ namespace AutoFlow.UnitTests.Application.Services
             Assert.True(resultado.IsSuccess);
             Assert.Equal(StatusOrdemServico.EmExecucao, resultado.Value!.Status);
             Assert.Equal(StatusOrcamento.Aprovado, resultado.Value.Orcamento!.Status);
+            Assert.Equal(4, estoque.Quantidade.Valor);
+        }
+
+
+        [Fact]
+        public async Task AdicionarPecaAsync_ComMesmaPecaJaAdicionada_DeveValidarQuantidadeTotalDaOs()
+        {
+            var ordem = CriarOrdemEmDiagnostico();
+            var peca = new PecaInsumo("Filtro de óleo", 50m) { Id = 7 };
+            var estoque = new Estoque(peca, 5) { Id = 3 };
+            ordem.AdicionarPeca(7, "Filtro de óleo", 3, 50m);
+
+            _ordemServicoRepositorioMock.Setup(r => r.ObterCompletaPorIdAsync(1)).ReturnsAsync(ordem);
+            _pecaInsumoRepositorioMock.Setup(r => r.ObterPorIdAsync(7)).ReturnsAsync(peca);
+            _estoqueRepositorioMock.Setup(r => r.ObterPorPecaInsumoAsync(7)).ReturnsAsync(estoque);
+
+            var resultado = await _service.AdicionarPecaAsync(
+                1,
+                new AdicionaPecaOrdemServicoDto(7, 3));
+
+            Assert.False(resultado.IsSuccess);
+            Assert.Equal(ErrorType.Validation, resultado.ErrorType);
+            Assert.Contains("Solicitado no total da OS: 6", resultado.Error);
+        }
+
+        [Fact]
+        public async Task AprovarOrcamentoAsync_ComPecaRepetida_DeveBaixarQuantidadeTotalUmaUnicaVez()
+        {
+            var ordem = CriarOrdemEmDiagnostico();
+            ordem.AdicionarPeca(2, "Filtro", 2, 50m);
+            ordem.AdicionarPeca(2, "Filtro", 3, 50m);
+            ordem.GerarOrcamento();
+
+            var peca = new PecaInsumo("Filtro", 50m) { Id = 2 };
+            var estoque = new Estoque(peca, 10);
+
+            _ordemServicoRepositorioMock.Setup(r => r.ObterCompletaPorIdAsync(1)).ReturnsAsync(ordem);
+            _estoqueRepositorioMock.Setup(r => r.ObterPorPecaInsumoAsync(2)).ReturnsAsync(estoque);
+
+            var resultado = await _service.AprovarOrcamentoAsync(1);
+
+            Assert.True(resultado.IsSuccess);
+            Assert.Equal(5, estoque.Quantidade.Valor);
+            _estoqueRepositorioMock.Verify(r => r.ObterPorPecaInsumoAsync(2), Times.Once);
+        }
+
+        [Fact]
+        public async Task IniciarEFinalizarExecucaoServicoAsync_DeveAtualizarDatasDoItem()
+        {
+            var ordem = CriarOrdemAguardandoAprovacao();
+            var item = Assert.Single(ordem.Servicos);
+            item.Id = 30;
+            ordem.AprovarOrcamento();
+
+            _ordemServicoRepositorioMock.Setup(r => r.ObterCompletaPorIdAsync(1)).ReturnsAsync(ordem);
+
+            var inicio = await _service.IniciarExecucaoServicoAsync(1, 30);
+            var fim = await _service.FinalizarExecucaoServicoAsync(1, 30);
+
+            Assert.True(inicio.IsSuccess);
+            Assert.True(fim.IsSuccess);
+            Assert.NotNull(item.ExecucaoIniciadaEm);
+            Assert.NotNull(item.ExecucaoFinalizadaEm);
         }
 
         [Fact]

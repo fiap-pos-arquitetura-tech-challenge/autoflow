@@ -4,11 +4,14 @@ namespace AutoFlow.Domain.Models
 {
     public class OrdemServicoItemServico : BaseModel
     {
+        public int OrdemServicoId { get; private set; }
         public int ServicoId { get; private set; }
         public string Descricao { get; private set; }
         public int Quantidade { get; private set; }
         public decimal ValorUnitario { get; private set; }
         public int TempoPrevisto { get; private set; }
+        public DateTime? ExecucaoIniciadaEm { get; private set; }
+        public DateTime? ExecucaoFinalizadaEm { get; private set; }
         public decimal Subtotal => Quantidade * ValorUnitario;
 
         public OrdemServicoItemServico()
@@ -38,6 +41,25 @@ namespace AutoFlow.Domain.Models
                 throw new OrdemServicoInvalidaException("Quantidade do serviço deve ser maior que zero.");
 
             Quantidade = quantidade;
+        }
+
+        public void IniciarExecucao()
+        {
+            if (ExecucaoIniciadaEm.HasValue)
+                throw new OrdemServicoInvalidaException("Execução do serviço já foi iniciada.");
+
+            ExecucaoIniciadaEm = DateTime.UtcNow;
+        }
+
+        public void FinalizarExecucao()
+        {
+            if (!ExecucaoIniciadaEm.HasValue)
+                throw new OrdemServicoInvalidaException("A execução do serviço deve ser iniciada antes de ser finalizada.");
+
+            if (ExecucaoFinalizadaEm.HasValue)
+                throw new OrdemServicoInvalidaException("Execução do serviço já foi finalizada.");
+
+            ExecucaoFinalizadaEm = DateTime.UtcNow;
         }
 
         private static void Validar(

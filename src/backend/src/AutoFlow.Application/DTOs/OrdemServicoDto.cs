@@ -14,7 +14,8 @@ namespace AutoFlow.Application.DTOs
 
     public record ReprovaOrcamentoOrdemServicoDto(string Justificativa);
 
-    public record OrdemServicoItemServicoDto(int Id, int ServicoId, string Descricao, int Quantidade, decimal ValorUnitario, int TempoPrevisto, decimal Subtotal);
+    public record OrdemServicoItemServicoDto(int Id, int ServicoId, string Descricao, int Quantidade, decimal ValorUnitario, int TempoPrevisto,
+        DateTime? ExecucaoIniciadaEm, DateTime? ExecucaoFinalizadaEm, decimal Subtotal);
 
     public record OrdemServicoItemPecaDto(int Id, int PecaId, string Descricao, int Quantidade, decimal ValorUnitario, decimal Subtotal);
 

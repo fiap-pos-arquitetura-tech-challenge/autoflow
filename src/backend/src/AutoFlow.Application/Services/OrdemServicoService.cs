@@ -130,8 +130,16 @@ namespace AutoFlow.Application.Services
             if (estoque is null)
                 return Result<OrdemServicoDto>.Failure("Estoque da peça/insumo não encontrado.", ErrorType.NotFound);
 
-            if (estoque.Quantidade.Valor < dto.Quantidade)
-                return Result<OrdemServicoDto>.Failure($"Estoque insuficiente. Disponível: {estoque.Quantidade.Valor}. Solicitado: {dto.Quantidade}.", ErrorType.Validation);
+            var quantidadeJaAdicionada = ordem.Pecas
+                .Where(x => x.PecaId == dto.PecaId)
+                .Sum(x => x.Quantidade);
+
+            var quantidadeTotalNecessaria = quantidadeJaAdicionada + dto.Quantidade;
+
+            if (estoque.Quantidade.Valor < quantidadeTotalNecessaria)
+                return Result<OrdemServicoDto>.Failure(
+                    $"Estoque insuficiente. Disponível: {estoque.Quantidade.Valor}. Solicitado no total da OS: {quantidadeTotalNecessaria}.",
+                    ErrorType.Validation);
 
             try
             {
@@ -164,7 +172,18 @@ namespace AutoFlow.Application.Services
             if (ordem is null)
                 return OrdemNaoEncontrada();
 
-            foreach (var item in ordem.Pecas)
+            var movimentacoesEstoque = new List<(Estoque Estoque, int Quantidade)>();
+
+            var pecasAgrupadas = ordem.Pecas
+                .GroupBy(x => x.PecaId)
+                .Select(grupo => new
+                {
+                    PecaId = grupo.Key,
+                    Descricao = grupo.First().Descricao,
+                    Quantidade = grupo.Sum(x => x.Quantidade)
+                });
+
+            foreach (var item in pecasAgrupadas)
             {
                 var estoque = await _estoqueRepositorio.ObterPorPecaInsumoAsync(item.PecaId);
 
@@ -172,12 +191,20 @@ namespace AutoFlow.Application.Services
                     return Result<OrdemServicoDto>.Failure($"Estoque da peça/insumo {item.PecaId} não encontrado.", ErrorType.NotFound);
 
                 if (estoque.Quantidade.Valor < item.Quantidade)
-                    return Result<OrdemServicoDto>.Failure($"Estoque insuficiente para {item.Descricao}. Disponível: {estoque.Quantidade.Valor}. Solicitado: {item.Quantidade}.", ErrorType.Validation);
+                    return Result<OrdemServicoDto>.Failure(
+                        $"Estoque insuficiente para {item.Descricao}. Disponível: {estoque.Quantidade.Valor}. Solicitado: {item.Quantidade}.",
+                        ErrorType.Validation);
+
+                movimentacoesEstoque.Add((estoque, item.Quantidade));
             }
 
             try
             {
                 ordem.AprovarOrcamento();
+
+                foreach (var movimentacao in movimentacoesEstoque)
+                    movimentacao.Estoque.Saida(movimentacao.Quantidade);
+
                 await _ordemServicoRepositorio.AtualizarAsync(ordem);
 
                 return Result<OrdemServicoDto>.Success(MapearParaDto(ordem));
@@ -186,6 +213,20 @@ namespace AutoFlow.Application.Services
             {
                 return Result<OrdemServicoDto>.Failure(ex.Message, ErrorType.Conflict);
             }
+            catch (EstoqueInvalidoException ex)
+            {
+                return Result<OrdemServicoDto>.Failure(ex.Message, ErrorType.Validation);
+            }
+        }
+
+        public async Task<Result<OrdemServicoDto>> IniciarExecucaoServicoAsync(int id, int itemServicoId)
+        {
+            return await AlterarOrdemAsync(id, ordem => ordem.IniciarExecucaoServico(itemServicoId));
+        }
+
+        public async Task<Result<OrdemServicoDto>> FinalizarExecucaoServicoAsync(int id, int itemServicoId)
+        {
+            return await AlterarOrdemAsync(id, ordem => ordem.FinalizarExecucaoServico(itemServicoId));
         }
 
         public async Task<Result<OrdemServicoDto>> ReprovarOrcamentoAsync(int id, ReprovaOrcamentoOrdemServicoDto dto)
@@ -274,6 +315,8 @@ namespace AutoFlow.Application.Services
                 item.Quantidade,
                 item.ValorUnitario,
                 item.TempoPrevisto,
+                item.ExecucaoIniciadaEm,
+                item.ExecucaoFinalizadaEm,
                 item.Subtotal));
 
             var pecas = ordem.Pecas.Select(item => new OrdemServicoItemPecaDto(

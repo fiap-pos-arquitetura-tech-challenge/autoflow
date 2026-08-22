@@ -135,6 +135,7 @@ namespace AutoFlow.Domain.Models
 
             Orcamento = new Orcamento(valorServicos, valorPecas);
             OrcamentoGeradoEm = Orcamento.GeradoEm;
+            OrcamentoDecididoEm = null;
             Status = StatusOrdemServico.AguardandoAprovacao;
         }
 
@@ -149,6 +150,30 @@ namespace AutoFlow.Domain.Models
             OrcamentoDecididoEm = Orcamento.DecididoEm;
             ExecucaoIniciadaEm = DateTime.UtcNow;
             Status = StatusOrdemServico.EmExecucao;
+        }
+
+        public void IniciarExecucaoServico(int itemServicoId)
+        {
+            ValidarStatus(StatusOrdemServico.EmExecucao);
+
+            var item = Servicos.FirstOrDefault(x => x.Id == itemServicoId);
+
+            if (item is null)
+                throw new OrdemServicoInvalidaException("Serviço não encontrado na ordem de serviço.");
+
+            item.IniciarExecucao();
+        }
+
+        public void FinalizarExecucaoServico(int itemServicoId)
+        {
+            ValidarStatus(StatusOrdemServico.EmExecucao);
+
+            var item = Servicos.FirstOrDefault(x => x.Id == itemServicoId);
+
+            if (item is null)
+                throw new OrdemServicoInvalidaException("Serviço não encontrado na ordem de serviço.");
+
+            item.FinalizarExecucao();
         }
 
         public void ReprovarOrcamento(string justificativa)

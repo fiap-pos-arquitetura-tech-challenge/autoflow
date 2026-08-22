@@ -41,5 +41,44 @@ namespace AutoFlow.UnitTests.Domain.Models
                 "Quantidade do serviço deve ser maior que zero.",
                 exception.Message);
         }
+
+        [Fact]
+        public void IniciarEFinalizarExecucao_DeveRegistrarDatas()
+        {
+            var item = new OrdemServicoItemServico(
+                1,
+                "Troca de óleo",
+                1,
+                150m,
+                60);
+
+            item.IniciarExecucao();
+
+            Assert.NotNull(item.ExecucaoIniciadaEm);
+            Assert.Null(item.ExecucaoFinalizadaEm);
+
+            item.FinalizarExecucao();
+
+            Assert.NotNull(item.ExecucaoFinalizadaEm);
+            Assert.True(item.ExecucaoFinalizadaEm!.Value >= item.ExecucaoIniciadaEm!.Value);
+        }
+
+        [Fact]
+        public void FinalizarExecucao_SemIniciar_DeveLancarOrdemServicoInvalidaException()
+        {
+            var item = new OrdemServicoItemServico(
+                1,
+                "Troca de óleo",
+                1,
+                150m,
+                60);
+
+            var exception = Assert.Throws<OrdemServicoInvalidaException>(() =>
+                item.FinalizarExecucao());
+
+            Assert.Equal(
+                "A execução do serviço deve ser iniciada antes de ser finalizada.",
+                exception.Message);
+        }
     }
 }
