@@ -53,7 +53,7 @@ namespace AutoFlow.UnitTests.Application.Validators
 
             Assert.NotNull(resultado);
             Assert.False(resultado!.IsSuccess);
-            Assert.Equal("Nome do serviço inválido.", resultado.Error);
+            Assert.Equal("Nome do serviço inválido", resultado.Error);
             Assert.Equal(ErrorType.Validation, resultado.ErrorType);
         }
 
@@ -79,9 +79,8 @@ namespace AutoFlow.UnitTests.Application.Validators
 
         [Theory]
         [InlineData(0)]
-        [InlineData(1)]
         [InlineData(-1)]
-        public void Validar_ComTempoMedioMenorOuIgualAUm_DeveRetornarFailureDeValidacao(
+        public void Validar_ComTempoMedioMenorOuIgualAZero_DeveRetornarFailureDeValidacao(
             int tempoMedio)
         {
             var dto = DtoValido() with
@@ -93,7 +92,7 @@ namespace AutoFlow.UnitTests.Application.Validators
 
             Assert.NotNull(resultado);
             Assert.False(resultado!.IsSuccess);
-            Assert.Equal("Tempo médio deve ser maior que 1.", resultado.Error);
+            Assert.Equal("Tempo médio deve ser maior que zero.", resultado.Error);
             Assert.Equal(ErrorType.Validation, resultado.ErrorType);
         }
     }

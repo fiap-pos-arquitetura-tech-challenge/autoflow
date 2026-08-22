@@ -1,14 +1,21 @@
-﻿using AutoFlow.Infrastructure.Persistence;
+using AutoFlow.Domain.Enums;
+using AutoFlow.Domain.Models;
+using AutoFlow.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace AutoFlow.UnitTests.Integration;
+namespace AutoFlow.IntegrationTests;
 public class AutoFlowApplicationFactory : WebApplicationFactory<Program>
 {
+    public const string ColaboradorEmail = "colaborador.teste@autoflow.com";
+    public const string ColaboradorSenha = "TesteIntegracao@123";
+    public const int ClienteId = 1;
+
     private SqliteConnection? _connection;
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -24,9 +31,9 @@ public class AutoFlowApplicationFactory : WebApplicationFactory<Program>
 
         builder.ConfigureServices(services =>
         {
-            services.RemoveAll(typeof(AppDbContext));
-            
-            services.RemoveAll(typeof(DbContextOptions<AppDbContext>));
+            services.RemoveAll<DbContextOptions<AppDbContext>>();
+            services.RemoveAll<IDbContextOptionsConfiguration<AppDbContext>>();
+            services.RemoveAll<AppDbContext>();
 
             _connection = new SqliteConnection("DataSource=:memory:");
 
@@ -45,6 +52,22 @@ public class AutoFlowApplicationFactory : WebApplicationFactory<Program>
                 .GetRequiredService<AppDbContext>();
 
             db.Database.EnsureCreated();
+
+            // Program.cs só semeia o colaborador inicial em ambiente Development;
+            // em Testing precisamos criar o usuário base aqui para poder logar nos testes.
+            db.Set<Usuario>().Add(new Usuario(
+                "Colaborador Teste",
+                ColaboradorEmail,
+                ColaboradorSenha,
+                Perfil.Colaborador));
+
+            db.Set<Cliente>().Add(new Cliente(
+                "Cliente Teste",
+                "11144477735",
+                "11999999999",
+                "cliente.teste@autoflow.com"));
+
+            db.SaveChanges();
         });
     }
 

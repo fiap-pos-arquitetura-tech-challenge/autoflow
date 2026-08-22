@@ -1,24 +1,21 @@
 ﻿
 using AutoFlow.Application.DTOs;
 using AutoFlow.Domain.Enums;
+using AutoFlow.IntegrationTests.Helpers;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 
-namespace AutoFlow.UnitTests.Integration;
+namespace AutoFlow.IntegrationTests.Api;
 
-public class VeiculoEndpointsTests : IClassFixture<AutoFlowApplicationFactory>
+public class VeiculoEndpointsTests(AutoFlowApplicationFactory factory) : IClassFixture<AutoFlowApplicationFactory>
 {
-    private readonly HttpClient _client;
-
-    public VeiculoEndpointsTests(AutoFlowApplicationFactory factory)
-    {
-        _client = factory.CreateClient();
-    }
+    private readonly HttpClient _client = factory.CreateClient();
 
     private static CriaVeiculoDto CriarVeiculoDto()
     {
         return new CriaVeiculoDto(
-            ClienteId: 1,
+            ClienteId: AutoFlowApplicationFactory.ClienteId,
             Marca: "Toyota",
             Modelo: "Corolla",
             AnoFabricacao: 2020,
@@ -52,6 +49,13 @@ public class VeiculoEndpointsTests : IClassFixture<AutoFlowApplicationFactory>
     [Fact]
     public async Task PostVeiculo_ComDadosValidos_DeveRetornar201()
     {
+        var token = await AuthHelper.LoginColaboradorAsync(
+            _client,
+            AutoFlowApplicationFactory.ColaboradorEmail,
+            AutoFlowApplicationFactory.ColaboradorSenha);
+
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
         var dto = CriarVeiculoDto();
 
         var response = await _client.PostAsJsonAsync("/api/veiculos", dto);
