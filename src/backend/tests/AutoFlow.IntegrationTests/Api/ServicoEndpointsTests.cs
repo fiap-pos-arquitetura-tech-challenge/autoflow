@@ -1,6 +1,8 @@
 
 using AutoFlow.Application.DTOs;
+using AutoFlow.IntegrationTests.Helpers;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 
 namespace AutoFlow.IntegrationTests.Api;
@@ -27,8 +29,20 @@ public class ServicoEndpointsTests(AutoFlowApplicationFactory factory) : IClassF
         );
     }
 
+    private async Task AutenticarAsync()
+    {
+        var token = await AuthHelper.LoginColaboradorAsync(
+            _client,
+            AutoFlowApplicationFactory.ColaboradorEmail,
+            AutoFlowApplicationFactory.ColaboradorSenha);
+
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+    }
+
     private async Task<ServicoDto> CriarServicoAsync(string nome)
     {
+        await AutenticarAsync();
+
         var response = await _client.PostAsJsonAsync("/api/servicos", CriarServicoDto(nome));
 
         response.EnsureSuccessStatusCode();
@@ -41,6 +55,8 @@ public class ServicoEndpointsTests(AutoFlowApplicationFactory factory) : IClassF
     [Fact]
     public async Task PostServico_ComDadosValidos_DeveRetornar201()
     {
+        await AutenticarAsync();
+
         var dto = CriarServicoDto("Troca de óleo");
 
         var response = await _client.PostAsJsonAsync("/api/servicos", dto);
@@ -58,8 +74,20 @@ public class ServicoEndpointsTests(AutoFlowApplicationFactory factory) : IClassF
     }
 
     [Fact]
+    public async Task PostServico_SemToken_DeveRetornar401()
+    {
+        var clienteAnonimo = factory.CreateClient();
+
+        var response = await clienteAnonimo.PostAsJsonAsync("/api/servicos", CriarServicoDto("Serviço sem token"));
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
     public async Task PostServico_ComDadosInvalidos_DeveRetornar400()
     {
+        await AutenticarAsync();
+
         var dto = CriarServicoDto("") ;
 
         var response = await _client.PostAsJsonAsync("/api/servicos", dto);
@@ -96,6 +124,8 @@ public class ServicoEndpointsTests(AutoFlowApplicationFactory factory) : IClassF
     [Fact]
     public async Task GetServicoPorId_ComIdInexistente_DeveRetornar404()
     {
+        await AutenticarAsync();
+
         var response = await _client.GetAsync("/api/servicos/999999");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -119,6 +149,8 @@ public class ServicoEndpointsTests(AutoFlowApplicationFactory factory) : IClassF
     [Fact]
     public async Task GetServicoPorNome_ComNomeInexistente_DeveRetornar404()
     {
+        await AutenticarAsync();
+
         var response = await _client.GetAsync("/api/servicos/nome/ServicoQueNaoExiste");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -162,6 +194,8 @@ public class ServicoEndpointsTests(AutoFlowApplicationFactory factory) : IClassF
     [Fact]
     public async Task PutServico_ComIdInexistente_DeveRetornar404()
     {
+        await AutenticarAsync();
+
         var response = await _client.PutAsJsonAsync(
             "/api/servicos/999999",
             CriarAtualizacaoDto("Serviço inexistente"));
@@ -197,6 +231,8 @@ public class ServicoEndpointsTests(AutoFlowApplicationFactory factory) : IClassF
     [Fact]
     public async Task DeleteServico_ComIdInexistente_DeveRetornar404()
     {
+        await AutenticarAsync();
+
         var response = await _client.DeleteAsync("/api/servicos/999999");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);

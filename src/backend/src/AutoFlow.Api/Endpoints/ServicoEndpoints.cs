@@ -1,6 +1,7 @@
 ﻿using AutoFlow.Api.Extensions;
 using AutoFlow.Application.DTOs;
 using AutoFlow.Application.Interfaces.Services;
+using AutoFlow.Domain.Enums;
 
 namespace AutoFlow.Api.Endpoints
 {
@@ -9,6 +10,7 @@ namespace AutoFlow.Api.Endpoints
         public static IEndpointRouteBuilder MapServicoEndpoints(this IEndpointRouteBuilder app)
         {
             var group = app.MapGroup("/api/servicos")
+                .RequireAuthorization(policy => policy.RequireRole(nameof(Perfil.Colaborador)))
                 .WithTags("Servicos");
 
             group.MapPost("/", Adicionar)

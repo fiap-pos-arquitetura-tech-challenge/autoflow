@@ -1,6 +1,8 @@
 
 using AutoFlow.Application.DTOs;
+using AutoFlow.IntegrationTests.Helpers;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 
 namespace AutoFlow.IntegrationTests.Api;
@@ -9,8 +11,20 @@ public class EstoqueEndpointsTests(AutoFlowApplicationFactory factory) : IClassF
 {
     private readonly HttpClient _client = factory.CreateClient();
 
+    private async Task AutenticarAsync()
+    {
+        var token = await AuthHelper.LoginColaboradorAsync(
+            _client,
+            AutoFlowApplicationFactory.ColaboradorEmail,
+            AutoFlowApplicationFactory.ColaboradorSenha);
+
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+    }
+
     private async Task<EstoqueDto> CriarPecaInsumoComEstoqueAsync(string nome)
     {
+        await AutenticarAsync();
+
         var pecaResponse = await _client.PostAsJsonAsync(
             "/api/pecasInsumos",
             new CriaPecaInsumoDto(nome, 50m));
@@ -45,8 +59,20 @@ public class EstoqueEndpointsTests(AutoFlowApplicationFactory factory) : IClassF
     }
 
     [Fact]
+    public async Task GetEstoquePorId_SemToken_DeveRetornar401()
+    {
+        var clienteAnonimo = factory.CreateClient();
+
+        var response = await clienteAnonimo.GetAsync("/api/estoques/1");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
     public async Task GetEstoquePorId_ComIdInexistente_DeveRetornar404()
     {
+        await AutenticarAsync();
+
         var response = await _client.GetAsync("/api/estoques/999999");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -55,6 +81,8 @@ public class EstoqueEndpointsTests(AutoFlowApplicationFactory factory) : IClassF
     [Fact]
     public async Task GetEstoquePorPecaInsumo_ComIdExistente_DeveRetornar200()
     {
+        await AutenticarAsync();
+
         var pecaResponse = await _client.PostAsJsonAsync(
             "/api/pecasInsumos",
             new CriaPecaInsumoDto("Filtro de ar", 35m));
@@ -76,6 +104,8 @@ public class EstoqueEndpointsTests(AutoFlowApplicationFactory factory) : IClassF
     [Fact]
     public async Task GetEstoquePorPecaInsumo_ComIdInexistente_DeveRetornar404()
     {
+        await AutenticarAsync();
+
         var response = await _client.GetAsync("/api/estoques/peca/999999");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -113,6 +143,8 @@ public class EstoqueEndpointsTests(AutoFlowApplicationFactory factory) : IClassF
     [Fact]
     public async Task PostEntrada_ComIdInexistente_DeveRetornar404()
     {
+        await AutenticarAsync();
+
         var response = await _client.PostAsJsonAsync(
             "/api/estoques/999999/entrada",
             new MovimentaEstoqueDto(10));
@@ -156,6 +188,8 @@ public class EstoqueEndpointsTests(AutoFlowApplicationFactory factory) : IClassF
     [Fact]
     public async Task PostSaida_ComIdInexistente_DeveRetornar404()
     {
+        await AutenticarAsync();
+
         var response = await _client.PostAsJsonAsync(
             "/api/estoques/999999/saida",
             new MovimentaEstoqueDto(1));
@@ -195,6 +229,8 @@ public class EstoqueEndpointsTests(AutoFlowApplicationFactory factory) : IClassF
     [Fact]
     public async Task PutAjustar_ComIdInexistente_DeveRetornar404()
     {
+        await AutenticarAsync();
+
         var response = await _client.PutAsJsonAsync(
             "/api/estoques/999999/ajustar",
             new MovimentaEstoqueDto(10));

@@ -1,6 +1,8 @@
 
 using AutoFlow.Application.DTOs;
+using AutoFlow.IntegrationTests.Helpers;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 
 namespace AutoFlow.IntegrationTests.Api;
@@ -25,8 +27,20 @@ public class PecaInsumoEndpointsTests(AutoFlowApplicationFactory factory) : ICla
         );
     }
 
+    private async Task AutenticarAsync()
+    {
+        var token = await AuthHelper.LoginColaboradorAsync(
+            _client,
+            AutoFlowApplicationFactory.ColaboradorEmail,
+            AutoFlowApplicationFactory.ColaboradorSenha);
+
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+    }
+
     private async Task<PecaInsumoDto> CriarPecaInsumoAsync(string nome)
     {
+        await AutenticarAsync();
+
         var response = await _client.PostAsJsonAsync("/api/pecasInsumos", CriarPecaInsumoDto(nome));
 
         response.EnsureSuccessStatusCode();
@@ -39,6 +53,8 @@ public class PecaInsumoEndpointsTests(AutoFlowApplicationFactory factory) : ICla
     [Fact]
     public async Task PostPecaInsumo_ComDadosValidos_DeveRetornar201()
     {
+        await AutenticarAsync();
+
         var dto = CriarPecaInsumoDto("Filtro de óleo");
 
         var response = await _client.PostAsJsonAsync("/api/pecasInsumos", dto);
@@ -55,8 +71,20 @@ public class PecaInsumoEndpointsTests(AutoFlowApplicationFactory factory) : ICla
     }
 
     [Fact]
+    public async Task PostPecaInsumo_SemToken_DeveRetornar401()
+    {
+        var clienteAnonimo = factory.CreateClient();
+
+        var response = await clienteAnonimo.PostAsJsonAsync("/api/pecasInsumos", CriarPecaInsumoDto("Peça sem token"));
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
     public async Task PostPecaInsumo_ComDadosInvalidos_DeveRetornar400()
     {
+        await AutenticarAsync();
+
         var dto = CriarPecaInsumoDto("");
 
         var response = await _client.PostAsJsonAsync("/api/pecasInsumos", dto);
@@ -83,6 +111,8 @@ public class PecaInsumoEndpointsTests(AutoFlowApplicationFactory factory) : ICla
     [Fact]
     public async Task GetPecaInsumoPorId_ComIdInexistente_DeveRetornar404()
     {
+        await AutenticarAsync();
+
         var response = await _client.GetAsync("/api/pecasInsumos/999999");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -125,6 +155,8 @@ public class PecaInsumoEndpointsTests(AutoFlowApplicationFactory factory) : ICla
     [Fact]
     public async Task PutPecaInsumo_ComIdInexistente_DeveRetornar404()
     {
+        await AutenticarAsync();
+
         var response = await _client.PutAsJsonAsync(
             "/api/pecasInsumos/999999",
             CriarAtualizacaoDto("Peça inexistente"));
@@ -160,6 +192,8 @@ public class PecaInsumoEndpointsTests(AutoFlowApplicationFactory factory) : ICla
     [Fact]
     public async Task DeletePecaInsumo_ComIdInexistente_DeveRetornar404()
     {
+        await AutenticarAsync();
+
         var response = await _client.DeleteAsync("/api/pecasInsumos/999999");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
