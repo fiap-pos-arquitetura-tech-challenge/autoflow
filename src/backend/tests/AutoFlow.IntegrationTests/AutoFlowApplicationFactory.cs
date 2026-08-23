@@ -15,6 +15,7 @@ public class AutoFlowApplicationFactory : WebApplicationFactory<Program>
     public const string ColaboradorEmail = "colaborador.teste@autoflow.com";
     public const string ColaboradorSenha = "TesteIntegracao@123";
     public const int ClienteId = 1;
+    public const string ClienteDocumento = "11144477735";
 
     private SqliteConnection? _connection;
 
@@ -63,7 +64,7 @@ public class AutoFlowApplicationFactory : WebApplicationFactory<Program>
 
             db.Set<Cliente>().Add(new Cliente(
                 "Cliente Teste",
-                "11144477735",
+                ClienteDocumento,
                 "11999999999",
                 "cliente.teste@autoflow.com"));
 
