@@ -1,6 +1,7 @@
-﻿using AutoFlow.Application.DTOs;
+﻿using AutoFlow.Api.Extensions;
+using AutoFlow.Application.DTOs;
 using AutoFlow.Application.Interfaces.Services;
-using AutoFlow.Api.Extensions;
+using AutoFlow.Domain.Enums;
 
 namespace AutoFlow.Api.Endpoints;
 
@@ -10,6 +11,7 @@ public static class EstoqueEndpoints
         this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/estoques")
+            .RequireAuthorization(policy => policy.RequireRole(nameof(Perfil.Colaborador)))
             .WithTags("Estoques");
 
         group.MapGet("/{id:int}", ObterPorId)

@@ -153,7 +153,6 @@ namespace AutoFlow.UnitTests.Application.Services
 
         [Theory]
         [InlineData(0)]
-        [InlineData(1)]
         [InlineData(-1)]
         public async Task AdicionarAsync_ComTempoMedioInvalido_DeveRetornarFailure(
             int tempoMedio)

@@ -19,13 +19,19 @@ src/backend/
 │   ├── AutoFlow.Domain/           # Entidades, value objects e regras de negócio
 │   └── AutoFlow.Infrastructure/   # Persistência (EF Core), migrations, repositórios, geração de token
 └── tests/
-    └── AutoFlow.UnitTests/        # Testes unitários e de integração (xUnit)
+    ├── AutoFlow.UnitTests/         # Testes unitários (domínio, validadores, serviços)
+    └── AutoFlow.IntegrationTests/  # Testes de integração dos endpoints (WebApplicationFactory + SQLite em memória)
 ```
 
 ### Domínio
 
 - **Cliente** — cadastro de clientes da oficina (documento CPF/CNPJ, e-mail, telefone).
 - **Veículo** — veículos vinculados a um cliente (placa, chassi, quilometragem, combustível, tipo).
+- **Serviço** — serviços oferecidos pela oficina (nome único, preço, tempo médio de execução).
+- **Peça/Insumo** — peças e insumos utilizados nos serviços (nome, valor); ao ser cadastrada, gera
+  automaticamente um **Estoque** associado com quantidade zero.
+- **Estoque** — controla a quantidade de uma peça/insumo, com movimentações de entrada, saída
+  (validando disponibilidade) e ajuste (definição direta da quantidade).
 - **Usuario** — conta de acesso com perfil `Colaborador` (equipe da oficina) ou `Cliente`
   (vinculado a um `Cliente` existente), usada para autenticação.
 
@@ -120,8 +126,9 @@ A API usa autenticação via **JWT Bearer**. O fluxo típico é:
    vinculado).
 2. O token é enviado no header `Authorization: Bearer {token}` nas chamadas
    seguintes.
-3. Endpoints de `Clientes`, `Veiculos` e criação de colaboradores exigem o
-   perfil `Colaborador`; a ativação de acesso do cliente
+3. Todos os endpoints administrativos (`Clientes`, `Veiculos`, `Servicos`,
+   `PecasInsumos`, `Estoques` e a criação de colaboradores) exigem o perfil
+   `Colaborador`; a ativação de acesso do cliente
    (`POST /api/usuarios/clientes`) é pública, usada pelo próprio cliente para
    criar sua conta a partir de um documento já cadastrado.
 
@@ -155,6 +162,22 @@ O documento OpenAPI cru pode ser obtido em `{url-base}/openapi/v1.json`.
 | POST   | `/api/veiculos`              | `Colaborador`           | Cadastra um veículo                          |
 | PUT    | `/api/veiculos/{id}`         | `Colaborador`           | Atualiza um veículo                          |
 | DELETE | `/api/veiculos/{id}`         | `Colaborador`           | Exclui um veículo                            |
+| GET    | `/api/servicos`              | `Colaborador`           | Lista serviços                               |
+| GET    | `/api/servicos/{id}`         | `Colaborador`           | Obtém um serviço por id                      |
+| GET    | `/api/servicos/nome/{nome}`  | `Colaborador`           | Obtém um serviço pelo nome                   |
+| POST   | `/api/servicos`              | `Colaborador`           | Cadastra um serviço (nome único)             |
+| PUT    | `/api/servicos/{id}`         | `Colaborador`           | Atualiza um serviço                          |
+| DELETE | `/api/servicos/{id}`         | `Colaborador`           | Exclui um serviço                            |
+| GET    | `/api/pecasInsumos`          | `Colaborador`           | Lista peças/insumos                          |
+| GET    | `/api/pecasInsumos/{id}`     | `Colaborador`           | Obtém uma peça/insumo por id                 |
+| POST   | `/api/pecasInsumos`          | `Colaborador`           | Cadastra uma peça/insumo (cria estoque zerado) |
+| PUT    | `/api/pecasInsumos/{id}`     | `Colaborador`           | Atualiza uma peça/insumo                     |
+| DELETE | `/api/pecasInsumos/{id}`     | `Colaborador`           | Exclui uma peça/insumo                       |
+| GET    | `/api/estoques/{id}`         | `Colaborador`           | Obtém um estoque por id                      |
+| GET    | `/api/estoques/peca/{pecaInsumoId}` | `Colaborador`    | Obtém o estoque de uma peça/insumo           |
+| POST   | `/api/estoques/{id}/entrada` | `Colaborador`           | Registra entrada de quantidade no estoque    |
+| POST   | `/api/estoques/{id}/saida`   | `Colaborador`           | Registra saída de quantidade do estoque      |
+| PUT    | `/api/estoques/{id}/ajustar` | `Colaborador`           | Ajusta a quantidade do estoque diretamente   |
 
 ## Executando os testes
 
@@ -163,9 +186,18 @@ cd src/backend
 dotnet test
 ```
 
-O projeto [AutoFlow.UnitTests](src/backend/tests/AutoFlow.UnitTests) reúne
-testes unitários (domínio, validadores, serviços) e testes de integração dos
-endpoints, executados contra um `WebApplicationFactory` com SQLite em memória.
+O projeto [AutoFlow.UnitTests](src/backend/tests/AutoFlow.UnitTests) reúne os
+testes unitários (domínio, validadores, serviços). O projeto
+[AutoFlow.IntegrationTests](src/backend/tests/AutoFlow.IntegrationTests) cobre
+os endpoints da API (incluindo autenticação e autorização por perfil),
+executados contra um `WebApplicationFactory` com SQLite em memória.
+
+Para rodar apenas um dos projetos:
+
+```bash
+dotnet test tests/AutoFlow.UnitTests/AutoFlow.UnitTests.csproj
+dotnet test tests/AutoFlow.IntegrationTests/AutoFlow.IntegrationTests.csproj
+```
 
 ## Stack
 

@@ -1,9 +1,6 @@
 ﻿using AutoFlow.Domain.Enums;
 using AutoFlow.Domain.Exceptions;
 using AutoFlow.Domain.ValueObjects;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace AutoFlow.Domain.Models
 {
@@ -35,7 +32,13 @@ namespace AutoFlow.Domain.Models
 
         public Veiculo()
         {
-
+            Cliente = null!; 
+            Marca = null!; 
+            Modelo = null!;
+            Cor = null!;
+            Placa = null!;
+            Chassi = null!;
+            Quilometragem = null!;
         }
         public Veiculo(
             int clienteId,
@@ -51,6 +54,7 @@ namespace AutoFlow.Domain.Models
             Quilometragem quilometragem)
         {
             ClienteId = clienteId;
+            Cliente = null!;
             Marca = marca;
             Modelo = modelo;
             AnoFabricacao = anoFabricacao;
