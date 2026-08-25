@@ -1,4 +1,4 @@
-﻿using AutoFlow.Application.DTOs;
+using AutoFlow.Application.DTOs;
 using AutoFlow.Application.Services;
 
 namespace AutoFlow.Application.Interfaces.Services
@@ -14,14 +14,16 @@ namespace AutoFlow.Application.Interfaces.Services
         Task<Result<OrdemServicoDto>> AdicionarPecaAsync(int id, AdicionaPecaOrdemServicoDto dto);
         Task<Result<OrdemServicoDto>> RemoverPecaAsync(int id, int pecaId);
         Task<Result<OrdemServicoDto>> GerarOrcamentoAsync(int id);
-        Task<Result<OrdemServicoDto>> AprovarOrcamentoAsync(int id);
+        Task<Result<OrdemServicoDto>> AprovarOrcamentoAsync(int id, int clienteId);
         Task<Result<OrdemServicoDto>> IniciarExecucaoServicoAsync(int id, int itemServicoId);
         Task<Result<OrdemServicoDto>> FinalizarExecucaoServicoAsync(int id, int itemServicoId);
-        Task<Result<OrdemServicoDto>> ReprovarOrcamentoAsync(int id, ReprovaOrcamentoOrdemServicoDto dto);
+        Task<Result<OrdemServicoDto>> ReprovarOrcamentoAsync(int id, int clienteId, ReprovaOrcamentoOrdemServicoDto dto);
         Task<Result<OrdemServicoDto>> FinalizarAsync(int id);
         Task<Result<OrdemServicoDto>> EntregarAsync(int id);
         Task<Result<OrdemServicoDto>> ObterPorIdAsync(int id);
         Task<IEnumerable<OrdemServicoDto>> ObterTodosAsync();
+        Task<Result<OrcamentoClienteDto>> ConsultarOrcamentoClienteAsync(int id, int clienteId);
         Task<Result<AndamentoOrdemServicoDto>> ConsultarAndamentoAsync(int id);
+        Task<Result<AndamentoOrdemServicoDto>> ConsultarAndamentoClienteAsync(int id, int clienteId);
     }
 }

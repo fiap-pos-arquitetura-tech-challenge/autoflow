@@ -13,6 +13,7 @@ namespace AutoFlow.Infrastructure.Persistence.Repositories
                 .Include(x => x.Servicos)
                 .Include(x => x.Pecas)
                 .Include(x => x.Orcamento)
+                .AsSplitQuery()
                 .FirstOrDefaultAsync(x => x.Id == id);
         }
 
@@ -22,6 +23,7 @@ namespace AutoFlow.Infrastructure.Persistence.Repositories
                 .Include(x => x.Servicos)
                 .Include(x => x.Pecas)
                 .Include(x => x.Orcamento)
+                .AsSplitQuery()
                 .ToListAsync();
         }
     }

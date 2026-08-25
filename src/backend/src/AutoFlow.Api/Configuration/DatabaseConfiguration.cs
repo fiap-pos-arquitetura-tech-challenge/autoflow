@@ -27,7 +27,7 @@ namespace AutoFlow.Api.Configuration
             IConfiguration configuration,
             ILogger logger)
         {
-            if (await dbContext.Set<Usuario>().AnyAsync())
+            if (await dbContext.Set<Usuario>().AnyAsync(x => x.Perfil == Perfil.Colaborador))
                 return;
 
             var nome = configuration["Bootstrap:Colaborador:Nome"] ?? "Administrador AutoFlow";

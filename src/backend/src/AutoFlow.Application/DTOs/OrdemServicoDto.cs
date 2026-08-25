@@ -1,4 +1,4 @@
-﻿using AutoFlow.Domain.Enums;
+using AutoFlow.Domain.Enums;
 
 namespace AutoFlow.Application.DTOs
 {
@@ -21,6 +21,9 @@ namespace AutoFlow.Application.DTOs
 
     public record OrcamentoDto(int Id, StatusOrcamento Status, decimal ValorServicos, decimal ValorPecas, decimal ValorTotal, DateTime GeradoEm, DateTime? DecididoEm, 
         string? JustificativaReprovacao);
+
+    public record OrcamentoClienteDto(int OrdemServicoId, StatusOrdemServico Status, IEnumerable<OrdemServicoItemServicoDto> Servicos,
+        IEnumerable<OrdemServicoItemPecaDto> Pecas, OrcamentoDto Orcamento);
 
     public record OrdemServicoDto(int Id, int ClienteId, int VeiculoId, StatusOrdemServico Status, string? AvariasObservadas, string? Diagnostico, DateTime DataAbertura,
         DateTime? DiagnosticoIniciadoEm, DateTime? OrcamentoGeradoEm, DateTime? OrcamentoDecididoEm, DateTime? ExecucaoIniciadaEm, DateTime? FinalizadaEm, DateTime? EntregueEm,

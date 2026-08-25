@@ -35,7 +35,7 @@ namespace AutoFlow.Domain.Models
 
             ClienteId = clienteId;
             VeiculoId = veiculoId;
-            AvariasObservadas = avariasObservadas;
+            AvariasObservadas = string.IsNullOrWhiteSpace(avariasObservadas) ? "Sem avarias observadas" : avariasObservadas.Trim();
             Status = StatusOrdemServico.Recebida;
             DataAbertura = DateTime.UtcNow;
         }
@@ -43,7 +43,7 @@ namespace AutoFlow.Domain.Models
         public void RegistrarAvarias(string? avariasObservadas)
         {
             ValidarStatus(StatusOrdemServico.Recebida, StatusOrdemServico.EmDiagnostico);
-            AvariasObservadas = avariasObservadas;
+            AvariasObservadas = string.IsNullOrWhiteSpace(avariasObservadas) ? "Sem avarias observadas" : avariasObservadas.Trim();
         }
 
         public void IniciarDiagnostico()
@@ -64,21 +64,11 @@ namespace AutoFlow.Domain.Models
             Diagnostico = diagnostico;
         }
 
-        public void AdicionarServico(
-            int servicoId,
-            string descricao,
-            int quantidade,
-            decimal valorUnitario,
-            int tempoPrevisto)
+        public void AdicionarServico(int servicoId, string descricao, int quantidade, decimal valorUnitario, int tempoPrevisto)
         {
             ValidarStatus(StatusOrdemServico.EmDiagnostico);
 
-            Servicos.Add(new OrdemServicoItemServico(
-                servicoId,
-                descricao,
-                quantidade,
-                valorUnitario,
-                tempoPrevisto));
+            Servicos.Add(new OrdemServicoItemServico(servicoId, descricao, quantidade, valorUnitario, tempoPrevisto));
         }
 
         public void RemoverServico(int servicoId)
@@ -93,19 +83,11 @@ namespace AutoFlow.Domain.Models
             Servicos.Remove(item);
         }
 
-        public void AdicionarPeca(
-            int pecaId,
-            string descricao,
-            int quantidade,
-            decimal valorUnitario)
+        public void AdicionarPeca(int pecaId, string descricao, int quantidade, decimal valorUnitario)
         {
             ValidarStatus(StatusOrdemServico.EmDiagnostico);
 
-            Pecas.Add(new OrdemServicoItemPeca(
-                pecaId,
-                descricao,
-                quantidade,
-                valorUnitario));
+            Pecas.Add(new OrdemServicoItemPeca(pecaId, descricao, quantidade, valorUnitario));
         }
 
         public void RemoverPeca(int pecaId)
@@ -192,6 +174,9 @@ namespace AutoFlow.Domain.Models
         {
             ValidarStatus(StatusOrdemServico.EmExecucao);
 
+            if (Servicos.Any(x => x.ExecucaoFinalizadaEm is null))
+                throw new OrdemServicoInvalidaException("Todos os serviços devem ser finalizados antes de finalizar a ordem de serviço.");
+
             Status = StatusOrdemServico.Finalizada;
             FinalizadaEm = DateTime.UtcNow;
         }
@@ -207,8 +192,7 @@ namespace AutoFlow.Domain.Models
         private void ValidarStatus(params StatusOrdemServico[] statusPermitidos)
         {
             if (!statusPermitidos.Contains(Status))
-                throw new OrdemServicoInvalidaException(
-                    $"A ação não é permitida para uma ordem de serviço com status {Status}.");
+                throw new OrdemServicoInvalidaException($"A ação não é permitida para uma ordem de serviço com status {Status}.");
         }
     }
 }

@@ -34,6 +34,8 @@ src/backend/
   (validando disponibilidade) e ajuste (definição direta da quantidade).
 - **Usuario** — conta de acesso com perfil `Colaborador` (equipe da oficina) ou `Cliente`
   (vinculado a um `Cliente` existente), usada para autenticação.
+- **Ordem de Serviço** — controla o fluxo completo da recepção à entrega do veículo, com diagnóstico,
+  serviços e peças em snapshot, orçamento, aprovação/reprovação pelo cliente, execução e histórico de datas.
 
 ## Pré-requisitos
 
@@ -49,7 +51,7 @@ aplicação não inicia. As demais chaves (`Jwt:Issuer`, `Jwt:Audience`,
 [appsettings.json](src/backend/src/AutoFlow.Api/appsettings.json).
 
 Ao subir pela primeira vez (ambiente de desenvolvimento), a API aplica as
-migrations pendentes automaticamente e, se não houver nenhum usuário
+migrations pendentes automaticamente e, se não houver nenhum colaborador
 cadastrado, faz o *seed* de um colaborador inicial a partir de
 `Bootstrap:Colaborador:Nome/Email/Senha`.
 
@@ -178,6 +180,38 @@ O documento OpenAPI cru pode ser obtido em `{url-base}/openapi/v1.json`.
 | POST   | `/api/estoques/{id}/entrada` | `Colaborador`           | Registra entrada de quantidade no estoque    |
 | POST   | `/api/estoques/{id}/saida`   | `Colaborador`           | Registra saída de quantidade do estoque      |
 | PUT    | `/api/estoques/{id}/ajustar` | `Colaborador`           | Ajusta a quantidade do estoque diretamente   |
+| POST   | `/api/ordens-servico` | `Colaborador` | Cria uma ordem de serviço |
+| GET    | `/api/ordens-servico` | `Colaborador` | Lista ordens de serviço |
+| GET    | `/api/ordens-servico/{id}` | `Colaborador` | Obtém os detalhes completos da OS |
+| PUT    | `/api/ordens-servico/{id}/avarias` | `Colaborador` | Registra/atualiza avarias observadas |
+| POST   | `/api/ordens-servico/{id}/diagnostico/iniciar` | `Colaborador` | Inicia o diagnóstico |
+| PUT    | `/api/ordens-servico/{id}/diagnostico` | `Colaborador` | Registra o diagnóstico |
+| POST   | `/api/ordens-servico/{id}/servicos` | `Colaborador` | Adiciona serviço à OS |
+| DELETE | `/api/ordens-servico/{id}/servicos/{servicoId}` | `Colaborador` | Remove serviço da OS |
+| POST   | `/api/ordens-servico/{id}/pecas` | `Colaborador` | Adiciona peça/insumo à OS, validando estoque |
+| DELETE | `/api/ordens-servico/{id}/pecas/{pecaId}` | `Colaborador` | Remove peça/insumo da OS |
+| POST   | `/api/ordens-servico/{id}/orcamento` | `Colaborador` | Gera o orçamento da OS |
+| GET    | `/api/ordens-servico/{id}/orcamento` | `Cliente` (dono da OS) | Consulta itens e valores do orçamento |
+| POST   | `/api/ordens-servico/{id}/orcamento/aprovar` | `Cliente` (dono da OS) | Aprova o orçamento e inicia a execução |
+| POST   | `/api/ordens-servico/{id}/orcamento/reprovar` | `Cliente` (dono da OS) | Reprova o orçamento com justificativa |
+| POST   | `/api/ordens-servico/{id}/servicos/{itemServicoId}/execucao/iniciar` | `Colaborador` | Inicia a execução de um serviço |
+| POST   | `/api/ordens-servico/{id}/servicos/{itemServicoId}/execucao/finalizar` | `Colaborador` | Finaliza a execução de um serviço |
+| POST   | `/api/ordens-servico/{id}/finalizar` | `Colaborador` | Finaliza a OS após concluir todos os serviços |
+| POST   | `/api/ordens-servico/{id}/entregar` | `Colaborador` | Registra a entrega do veículo |
+| GET    | `/api/ordens-servico/{id}/andamento` | `Cliente` dono / `Colaborador` | Consulta o andamento resumido da OS |
+
+### Fluxo da Ordem de Serviço
+
+O fluxo principal de status é:
+
+```text
+Recebida → EmDiagnostico → AguardandoAprovacao → EmExecucao → Finalizada → Entregue
+```
+
+O colaborador prepara diagnóstico, serviços, peças e orçamento. A aprovação ou reprovação do orçamento
+é feita pelo cliente autenticado e somente para uma OS vinculada ao seu `ClienteId` no token JWT. Na aprovação,
+as peças utilizadas são baixadas do estoque. A OS só pode ser finalizada quando todos os seus serviços estiverem
+com a execução concluída.
 
 ## Executando os testes
 
