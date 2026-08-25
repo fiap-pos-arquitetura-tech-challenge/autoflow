@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SonarProjectConfig xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.sonarsource.com/msbuild/analyzer/2021/1">
+  <AnalysisConfigPath>E:\Lucas\Projetos\techChallenge\autoflow\src\backend\.sonarqube\conf\SonarQubeAnalysisConfig.xml</AnalysisConfigPath>
+  <ProjectPath>E:\Lucas\Projetos\techChallenge\autoflow\src\backend\src\AutoFlow.Application\AutoFlow.Application.csproj</ProjectPath>
+  <FilesToAnalyzePath>E:\Lucas\Projetos\techChallenge\autoflow\src\backend\.sonarqube\conf\8\FilesToAnalyze.txt</FilesToAnalyzePath>
+  <OutPath>E:\Lucas\Projetos\techChallenge\autoflow\src\backend\.sonarqube\out\8</OutPath>
+  <ProjectType>Product</ProjectType>
+  <TargetFramework>net10.0</TargetFramework>
+</SonarProjectConfig>

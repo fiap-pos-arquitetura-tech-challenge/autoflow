@@ -1,0 +1,11 @@
+﻿E:\Lucas\Projetos\techChallenge\autoflow\src\backend\tests\AutoFlow.IntegrationTests\Api\ClienteEndpointsTests.cs
+E:\Lucas\Projetos\techChallenge\autoflow\src\backend\tests\AutoFlow.IntegrationTests\Api\EstoqueEndpointsTests.cs
+E:\Lucas\Projetos\techChallenge\autoflow\src\backend\tests\AutoFlow.IntegrationTests\Api\PecaInsumoEndpointsTests.cs
+E:\Lucas\Projetos\techChallenge\autoflow\src\backend\tests\AutoFlow.IntegrationTests\Api\ServicoEndpointsTests.cs
+E:\Lucas\Projetos\techChallenge\autoflow\src\backend\tests\AutoFlow.IntegrationTests\Api\VeiculoEndpointsTests.cs
+E:\Lucas\Projetos\techChallenge\autoflow\src\backend\tests\AutoFlow.IntegrationTests\AutoFlowApplicationFactory.cs
+E:\Lucas\Projetos\techChallenge\autoflow\src\backend\tests\AutoFlow.IntegrationTests\Helpers\AuthHelper.cs
+C:\Users\Lucas\.nuget\packages\xunit.v3.core.mtp-v2\4.0.0\_content\DefaultRunnerReporters.cs
+C:\Users\Lucas\.nuget\packages\xunit.v3.core.mtp-v2\4.0.0\_content\DefaultResultWriters.cs
+C:\Users\Lucas\.nuget\packages\microsoft.testplatform.testhost\17.14.1\build\net8.0\x64\testhost.exe
+C:\Users\Lucas\.nuget\packages\microsoft.testplatform.testhost\17.14.1\build\net8.0\x64\testhost.dll
