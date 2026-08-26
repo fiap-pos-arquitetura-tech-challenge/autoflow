@@ -1,4 +1,4 @@
-using AutoFlow.Domain.Enums;
+﻿using AutoFlow.Domain.Enums;
 using AutoFlow.Domain.Models;
 using AutoFlow.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Hosting;
@@ -16,6 +16,11 @@ public class AutoFlowApplicationFactory : WebApplicationFactory<Program>
     public const string ColaboradorSenha = "TesteIntegracao@123";
     public const int ClienteId = 1;
     public const string ClienteDocumento = "11144477735";
+    public const string ClienteEmail = "cliente.teste@autoflow.com";
+    public const string ClienteSenha = "ClienteTeste@123";
+    public const int OutroClienteId = 2;
+    public const string OutroClienteEmail = "outro.cliente@autoflow.com";
+    public const string OutroClienteSenha = "OutroCliente@123";
 
     private SqliteConnection? _connection;
 
@@ -62,11 +67,34 @@ public class AutoFlowApplicationFactory : WebApplicationFactory<Program>
                 ColaboradorSenha,
                 Perfil.Colaborador));
 
-            db.Set<Cliente>().Add(new Cliente(
+            var cliente = new Cliente(
                 "Cliente Teste",
                 ClienteDocumento,
                 "11999999999",
-                "cliente.teste@autoflow.com"));
+                ClienteEmail);
+
+            var outroCliente = new Cliente(
+                "Outro Cliente",
+                "52998224725",
+                "11988888888",
+                OutroClienteEmail);
+
+            db.Set<Cliente>().AddRange(cliente, outroCliente);
+            db.SaveChanges();
+
+            db.Set<Usuario>().AddRange(
+                new Usuario(
+                    "Cliente Teste",
+                    ClienteEmail,
+                    ClienteSenha,
+                    Perfil.Cliente,
+                    cliente.Id),
+                new Usuario(
+                    "Outro Cliente",
+                    OutroClienteEmail,
+                    OutroClienteSenha,
+                    Perfil.Cliente,
+                    outroCliente.Id));
 
             db.SaveChanges();
         });

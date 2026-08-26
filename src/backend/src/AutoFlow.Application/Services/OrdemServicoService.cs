@@ -1,4 +1,4 @@
-﻿using AutoFlow.Application.DTOs;
+using AutoFlow.Application.DTOs;
 using AutoFlow.Application.Interfaces.Repositories;
 using AutoFlow.Application.Interfaces.Services;
 using AutoFlow.Application.Services.Enums;
@@ -165,11 +165,11 @@ namespace AutoFlow.Application.Services
             return await AlterarOrdemAsync(id, ordem => ordem.GerarOrcamento());
         }
 
-        public async Task<Result<OrdemServicoDto>> AprovarOrcamentoAsync(int id)
+        public async Task<Result<OrdemServicoDto>> AprovarOrcamentoAsync(int id, int clienteId)
         {
             var ordem = await _ordemServicoRepositorio.ObterCompletaPorIdAsync(id);
 
-            if (ordem is null)
+            if (ordem is null || ordem.ClienteId != clienteId)
                 return OrdemNaoEncontrada();
 
             var movimentacoesEstoque = new List<(Estoque Estoque, int Quantidade)>();
@@ -229,14 +229,29 @@ namespace AutoFlow.Application.Services
             return await AlterarOrdemAsync(id, ordem => ordem.FinalizarExecucaoServico(itemServicoId));
         }
 
-        public async Task<Result<OrdemServicoDto>> ReprovarOrcamentoAsync(int id, ReprovaOrcamentoOrdemServicoDto dto)
+        public async Task<Result<OrdemServicoDto>> ReprovarOrcamentoAsync(int id, int clienteId, ReprovaOrcamentoOrdemServicoDto dto)
         {
             var validador = OrdemServicoValidador.Validar(dto);
 
             if (validador is not null)
                 return Falha<OrdemServicoDto>(validador);
 
-            return await AlterarOrdemAsync(id, ordem => ordem.ReprovarOrcamento(dto.Justificativa.Trim()));
+            var ordem = await _ordemServicoRepositorio.ObterCompletaPorIdAsync(id);
+
+            if (ordem is null || ordem.ClienteId != clienteId)
+                return OrdemNaoEncontrada();
+
+            try
+            {
+                ordem.ReprovarOrcamento(dto.Justificativa.Trim());
+                await _ordemServicoRepositorio.AtualizarAsync(ordem);
+
+                return Result<OrdemServicoDto>.Success(MapearParaDto(ordem));
+            }
+            catch (OrdemServicoInvalidaException ex)
+            {
+                return Result<OrdemServicoDto>.Failure(ex.Message, ErrorType.Conflict);
+            }
         }
 
         public async Task<Result<OrdemServicoDto>> FinalizarAsync(int id)
@@ -265,11 +280,42 @@ namespace AutoFlow.Application.Services
             return ordens.Select(MapearParaDto);
         }
 
+        public async Task<Result<OrcamentoClienteDto>> ConsultarOrcamentoClienteAsync(int id, int clienteId)
+        {
+            var ordem = await _ordemServicoRepositorio.ObterCompletaPorIdAsync(id);
+
+            if (ordem is null || ordem.ClienteId != clienteId)
+                return Result<OrcamentoClienteDto>.Failure("Ordem de serviço não encontrada.", ErrorType.NotFound);
+
+            if (ordem.Orcamento is null)
+                return Result<OrcamentoClienteDto>.Failure("Orçamento não encontrado.", ErrorType.NotFound);
+
+            var dto = MapearParaDto(ordem);
+
+            return Result<OrcamentoClienteDto>.Success(new OrcamentoClienteDto(
+                ordem.Id,
+                ordem.Status,
+                dto.Servicos,
+                dto.Pecas,
+                dto.Orcamento!));
+        }
+
         public async Task<Result<AndamentoOrdemServicoDto>> ConsultarAndamentoAsync(int id)
         {
             var ordem = await _ordemServicoRepositorio.ObterCompletaPorIdAsync(id);
 
             if (ordem is null)
+                return Result<AndamentoOrdemServicoDto>.Failure("Ordem de serviço não encontrada.", ErrorType.NotFound);
+
+            return Result<AndamentoOrdemServicoDto>.Success(new AndamentoOrdemServicoDto(ordem.Id, ordem.Status, ordem.DataAbertura, ordem.DiagnosticoIniciadoEm, ordem.OrcamentoGeradoEm,
+                ordem.OrcamentoDecididoEm, ordem.ExecucaoIniciadaEm, ordem.FinalizadaEm, ordem.EntregueEm));
+        }
+
+        public async Task<Result<AndamentoOrdemServicoDto>> ConsultarAndamentoClienteAsync(int id, int clienteId)
+        {
+            var ordem = await _ordemServicoRepositorio.ObterCompletaPorIdAsync(id);
+
+            if (ordem is null || ordem.ClienteId != clienteId)
                 return Result<AndamentoOrdemServicoDto>.Failure("Ordem de serviço não encontrada.", ErrorType.NotFound);
 
             return Result<AndamentoOrdemServicoDto>.Success(new AndamentoOrdemServicoDto(ordem.Id, ordem.Status, ordem.DataAbertura, ordem.DiagnosticoIniciadoEm, ordem.OrcamentoGeradoEm,

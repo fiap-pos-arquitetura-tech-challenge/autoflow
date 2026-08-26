@@ -39,6 +39,27 @@ namespace AutoFlow.UnitTests.Domain.Models
         }
 
         [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("   ")]
+        public void Construtor_SemAvarias_DeveRegistrarMensagemPadrao(string? avarias)
+        {
+            var ordemServico = new OrdemServico(1, 2, avarias);
+
+            Assert.Equal("Sem avarias observadas", ordemServico.AvariasObservadas);
+        }
+
+        [Fact]
+        public void RegistrarAvarias_ComTexto_DeveRemoverEspacosDasPontas()
+        {
+            var ordemServico = new OrdemServico(1, 2);
+
+            ordemServico.RegistrarAvarias("  Risco na porta  ");
+
+            Assert.Equal("Risco na porta", ordemServico.AvariasObservadas);
+        }
+
+        [Theory]
         [InlineData(0, 1, "Cliente é obrigatório.")]
         [InlineData(-1, 1, "Cliente é obrigatório.")]
         [InlineData(1, 0, "Veículo é obrigatório.")]
@@ -158,14 +179,33 @@ namespace AutoFlow.UnitTests.Domain.Models
         public void FluxoCompleto_ComOrcamentoAprovado_DeveFinalizarComoEntregue()
         {
             var ordemServico = CriarOrdemServicoAguardandoAprovacao();
+            var itemServico = Assert.Single(ordemServico.Servicos);
+            itemServico.Id = 1;
 
             ordemServico.AprovarOrcamento();
+            ordemServico.IniciarExecucaoServico(1);
+            ordemServico.FinalizarExecucaoServico(1);
             ordemServico.Finalizar();
             ordemServico.Entregar();
 
             Assert.Equal(StatusOrdemServico.Entregue, ordemServico.Status);
             Assert.NotNull(ordemServico.FinalizadaEm);
             Assert.NotNull(ordemServico.EntregueEm);
+        }
+
+        [Fact]
+        public void Finalizar_ComServicoPendente_DeveLancarOrdemServicoInvalidaException()
+        {
+            var ordemServico = CriarOrdemServicoAguardandoAprovacao();
+            ordemServico.AprovarOrcamento();
+
+            var exception = Assert.Throws<OrdemServicoInvalidaException>(() => ordemServico.Finalizar());
+
+            Assert.Equal(
+                "Todos os serviços devem ser finalizados antes de finalizar a ordem de serviço.",
+                exception.Message);
+            Assert.Equal(StatusOrdemServico.EmExecucao, ordemServico.Status);
+            Assert.Null(ordemServico.FinalizadaEm);
         }
 
         [Fact]

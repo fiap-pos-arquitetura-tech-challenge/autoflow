@@ -1,4 +1,4 @@
-﻿using AutoFlow.Application.DTOs;
+using AutoFlow.Application.DTOs;
 using AutoFlow.Application.Interfaces.Repositories;
 using AutoFlow.Application.Services;
 using AutoFlow.Application.Services.Enums;
@@ -174,7 +174,7 @@ namespace AutoFlow.UnitTests.Application.Services
             _ordemServicoRepositorioMock.Setup(r => r.ObterCompletaPorIdAsync(1)).ReturnsAsync(ordem);
             _estoqueRepositorioMock.Setup(r => r.ObterPorPecaInsumoAsync(2)).ReturnsAsync(estoque);
 
-            var resultado = await _service.AprovarOrcamentoAsync(1);
+            var resultado = await _service.AprovarOrcamentoAsync(1, 1);
 
             Assert.True(resultado.IsSuccess);
             Assert.Equal(StatusOrdemServico.EmExecucao, resultado.Value!.Status);
@@ -218,7 +218,7 @@ namespace AutoFlow.UnitTests.Application.Services
             _ordemServicoRepositorioMock.Setup(r => r.ObterCompletaPorIdAsync(1)).ReturnsAsync(ordem);
             _estoqueRepositorioMock.Setup(r => r.ObterPorPecaInsumoAsync(2)).ReturnsAsync(estoque);
 
-            var resultado = await _service.AprovarOrcamentoAsync(1);
+            var resultado = await _service.AprovarOrcamentoAsync(1, 1);
 
             Assert.True(resultado.IsSuccess);
             Assert.Equal(5, estoque.Quantidade.Valor);
@@ -249,6 +249,7 @@ namespace AutoFlow.UnitTests.Application.Services
         {
             var resultado = await _service.ReprovarOrcamentoAsync(
                 1,
+                1,
                 new ReprovaOrcamentoOrdemServicoDto(""));
 
             Assert.False(resultado.IsSuccess);
@@ -257,6 +258,66 @@ namespace AutoFlow.UnitTests.Application.Services
             _ordemServicoRepositorioMock.Verify(
                 r => r.ObterCompletaPorIdAsync(It.IsAny<int>()),
                 Times.Never);
+        }
+
+        [Fact]
+        public async Task AprovarOrcamentoAsync_ComClienteDeOutraOrdem_DeveRetornarNotFound()
+        {
+            var ordem = CriarOrdemAguardandoAprovacao();
+            _ordemServicoRepositorioMock.Setup(r => r.ObterCompletaPorIdAsync(1)).ReturnsAsync(ordem);
+
+            var resultado = await _service.AprovarOrcamentoAsync(1, 99);
+
+            Assert.False(resultado.IsSuccess);
+            Assert.Equal(ErrorType.NotFound, resultado.ErrorType);
+            _estoqueRepositorioMock.Verify(
+                r => r.ObterPorPecaInsumoAsync(It.IsAny<int>()),
+                Times.Never);
+        }
+
+        [Fact]
+        public async Task ReprovarOrcamentoAsync_ComClienteDeOutraOrdem_DeveRetornarNotFound()
+        {
+            var ordem = CriarOrdemAguardandoAprovacao();
+            _ordemServicoRepositorioMock.Setup(r => r.ObterCompletaPorIdAsync(1)).ReturnsAsync(ordem);
+
+            var resultado = await _service.ReprovarOrcamentoAsync(
+                1,
+                99,
+                new ReprovaOrcamentoOrdemServicoDto("Valor acima do esperado."));
+
+            Assert.False(resultado.IsSuccess);
+            Assert.Equal(ErrorType.NotFound, resultado.ErrorType);
+            _ordemServicoRepositorioMock.Verify(
+                r => r.AtualizarAsync(It.IsAny<OrdemServico>()),
+                Times.Never);
+        }
+
+        [Fact]
+        public async Task ConsultarOrcamentoClienteAsync_ComClienteDaOrdem_DeveRetornarItensEValores()
+        {
+            var ordem = CriarOrdemAguardandoAprovacao();
+            _ordemServicoRepositorioMock.Setup(r => r.ObterCompletaPorIdAsync(1)).ReturnsAsync(ordem);
+
+            var resultado = await _service.ConsultarOrcamentoClienteAsync(1, 1);
+
+            Assert.True(resultado.IsSuccess);
+            Assert.Equal(StatusOrdemServico.AguardandoAprovacao, resultado.Value!.Status);
+            Assert.Single(resultado.Value.Servicos);
+            Assert.Single(resultado.Value.Pecas);
+            Assert.Equal(250m, resultado.Value.Orcamento.ValorTotal);
+        }
+
+        [Fact]
+        public async Task ConsultarOrcamentoClienteAsync_ComOutroCliente_DeveRetornarNotFound()
+        {
+            var ordem = CriarOrdemAguardandoAprovacao();
+            _ordemServicoRepositorioMock.Setup(r => r.ObterCompletaPorIdAsync(1)).ReturnsAsync(ordem);
+
+            var resultado = await _service.ConsultarOrcamentoClienteAsync(1, 99);
+
+            Assert.False(resultado.IsSuccess);
+            Assert.Equal(ErrorType.NotFound, resultado.ErrorType);
         }
 
         [Fact]
@@ -270,6 +331,18 @@ namespace AutoFlow.UnitTests.Application.Services
             Assert.True(resultado.IsSuccess);
             Assert.Equal(15, resultado.Value!.Id);
             Assert.Equal(StatusOrdemServico.Recebida, resultado.Value.Status);
+        }
+
+        [Fact]
+        public async Task ConsultarAndamentoClienteAsync_ComOrdemDeOutroCliente_DeveRetornarNotFound()
+        {
+            var ordem = new OrdemServico(1, 2) { Id = 15 };
+            _ordemServicoRepositorioMock.Setup(r => r.ObterCompletaPorIdAsync(15)).ReturnsAsync(ordem);
+
+            var resultado = await _service.ConsultarAndamentoClienteAsync(15, 99);
+
+            Assert.False(resultado.IsSuccess);
+            Assert.Equal(ErrorType.NotFound, resultado.ErrorType);
         }
 
         [Fact]

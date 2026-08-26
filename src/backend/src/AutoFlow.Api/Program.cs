@@ -46,6 +46,7 @@ app.MapVeiculoEndpoints();
 app.MapPecaInsumoEndpoints();
 
 app.MapEstoqueEndpoints();
+app.MapOrdemServicoEndpoints();
 
 app.Run();
 
