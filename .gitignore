@@ -17,6 +17,8 @@
 # Mono auto generated files
 mono_crash.*
 
+.idea/
+
 #SonarQube files
 .sonarqube/
 
