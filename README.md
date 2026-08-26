@@ -199,6 +199,188 @@ dotnet test tests/AutoFlow.UnitTests/AutoFlow.UnitTests.csproj
 dotnet test tests/AutoFlow.IntegrationTests/AutoFlow.IntegrationTests.csproj
 ```
 
+## Análise de Qualidade com SonarQube
+
+O projeto utiliza o SonarQube para análise estática de código, identificação de vulnerabilidades, code smells, bugs e acompanhamento da cobertura dos testes automatizados.
+
+### Pré-requisitos
+
+Instale as ferramentas abaixo:
+
+#### SonarScanner para .NET
+
+```bash
+dotnet tool install --global dotnet-sonarscanner
+```
+
+#### Dotnet Coverage
+
+```bash
+dotnet tool install --global dotnet-coverage
+```
+
+Verifique a instalação:
+
+```bash
+dotnet sonarscanner --version
+dotnet-coverage --version
+```
+
+---
+
+### Executando o SonarQube
+
+O SonarQube está disponível através do Docker Compose do projeto.
+
+Subir apenas o serviço do SonarQube:
+
+```bash
+docker compose up -d sonarqube
+```
+
+Verificar o status:
+
+```bash
+docker compose ps
+```
+
+Visualizar logs:
+
+```bash
+docker compose logs -f sonarqube
+```
+
+Acesse:
+
+```text
+http://localhost:9000
+```
+
+No primeiro acesso:
+
+- Usuário: `admin`
+- Senha: `admin`
+
+Após o login:
+
+1. Crie um projeto no SonarQube.
+2. Defina a chave do projeto (Project Key).
+3. Gere um token em:
+
+```text
+My Account → Security → Generate Tokens
+```
+
+---
+
+## Executando uma análise completa
+
+Na raiz da solução:
+
+```bash
+cd src/backend
+```
+
+### 1. Iniciar o scanner
+
+```powershell
+dotnet sonarscanner begin `
+  /k:"AutoFlow" `
+  /d:sonar.host.url="http://localhost:9000" `
+  /d:sonar.token="SEU_TOKEN" `
+  /d:sonar.cs.vscoveragexml.reportsPaths="coverage.xml"
+```
+
+### 2. Compilar a aplicação
+
+```bash
+dotnet build AutoFlow.slnx --no-incremental
+```
+
+### 3. Executar os testes e gerar cobertura
+
+```bash
+dotnet-coverage collect "dotnet test --solution AutoFlow.slnx" -f xml -o coverage.xml
+```
+
+Esse comando executa os testes e gera o arquivo:
+
+```text
+coverage.xml
+```
+
+### 4. Finalizar a análise
+
+```powershell
+dotnet sonarscanner end `
+  /d:sonar.token="SEU_TOKEN"
+```
+
+---
+
+## Fluxo da análise
+
+```text
+SonarScanner Begin
+        ↓
+dotnet build
+        ↓
+dotnet test + dotnet-coverage
+        ↓
+coverage.xml
+        ↓
+SonarScanner End
+        ↓
+SonarQube
+```
+
+---
+
+## Métricas analisadas
+
+O SonarQube avalia automaticamente:
+
+- Bugs
+- Vulnerabilidades
+- Security Hotspots
+- Code Smells
+- Cobertura de testes
+- Duplicação de código
+- Confiabilidade (Reliability)
+- Manutenibilidade (Maintainability)
+- Segurança (Security)
+- Quality Gate
+
+---
+
+## Cobertura de testes
+
+A cobertura é gerada através do `dotnet-coverage` e importada automaticamente pelo SonarQube.
+
+O relatório é salvo em:
+
+```text
+coverage.xml
+```
+
+Após a análise, a cobertura pode ser consultada diretamente no dashboard do SonarQube.
+
+---
+
+## Exemplo de resultado
+
+```text
+Quality Gate: PASSED
+
+Security: B
+Reliability: C
+Maintainability: A
+
+Coverage: 82,8%
+Duplications: 0,7%
+```
+
+
 ## Stack
 
 - .NET 10 / ASP.NET Core (Minimal APIs)
