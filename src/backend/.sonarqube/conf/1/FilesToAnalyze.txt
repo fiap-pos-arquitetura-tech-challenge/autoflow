@@ -1,3 +1,0 @@
-﻿E:\Lucas\Projetos\techChallenge\autoflow\src\backend\docker-compose.override.yml
-E:\Lucas\Projetos\techChallenge\autoflow\src\backend\docker-compose.yml
-E:\Lucas\Projetos\techChallenge\autoflow\src\backend\.dockerignore
