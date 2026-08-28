@@ -1,0 +1,1929 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Relatório SonarQube - autoflow</title>
+<style>
+    @page {
+        margin: 18mm;
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: Arial, Helvetica, sans-serif;
+        margin: 0;
+        color: #202124;
+        background: #f6f7f9;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 32px;
+    }
+
+    header {
+        background: white;
+        padding: 28px 32px;
+        border-radius: 12px;
+        margin-bottom: 22px;
+        border: 1px solid #e2e5e9;
+    }
+
+    h1 {
+        margin: 0 0 8px;
+        font-size: 28px;
+    }
+
+    h2 {
+        margin-top: 34px;
+        font-size: 20px;
+    }
+
+    .meta {
+        color: #667085;
+        font-size: 14px;
+    }
+
+    .quality {
+        margin-top: 20px;
+        display: inline-block;
+        padding: 9px 16px;
+        border-radius: 20px;
+        font-weight: bold;
+    }
+
+    .passed {
+        background: #dff7e8;
+        color: #16794c;
+    }
+
+    .failed {
+        background: #fde2e1;
+        color: #b42318;
+    }
+
+    .cards {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+    }
+
+    .card, .rating-card {
+        background: white;
+        border: 1px solid #e2e5e9;
+        border-radius: 10px;
+        padding: 18px;
+    }
+
+    .label {
+        color: #667085;
+        font-size: 13px;
+        margin-bottom: 8px;
+    }
+
+    .value {
+        font-size: 25px;
+        font-weight: bold;
+    }
+
+    .ratings {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+    }
+
+    .rating-card {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .rating-card span {
+        color: #667085;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border: 1px solid #e2e5e9;
+        border-radius: 10px;
+        overflow: hidden;
+        font-size: 13px;
+    }
+
+    th, td {
+        padding: 12px;
+        border-bottom: 1px solid #eaecf0;
+        text-align: left;
+        vertical-align: top;
+    }
+
+    th {
+        background: #f9fafb;
+    }
+
+    code {
+        font-size: 12px;
+    }
+
+    .severity {
+        font-weight: bold;
+        font-size: 11px;
+    }
+
+    .blocker, .critical {
+        color: #b42318;
+    }
+
+    .major {
+        color: #b54708;
+    }
+
+    .minor {
+        color: #667085;
+    }
+
+    .info {
+        color: #175cd3;
+    }
+
+    .empty {
+        text-align: center;
+        padding: 30px;
+        color: #667085;
+    }
+
+    footer {
+        margin-top: 30px;
+        color: #98a2b3;
+        font-size: 12px;
+        text-align: center;
+    }
+
+    @media print {
+        body {
+            background: white;
+        }
+
+        .container {
+            max-width: none;
+            padding: 0;
+        }
+
+        .card, .rating-card, header, table {
+            break-inside: avoid;
+        }
+    }
+
+    @media (max-width: 800px) {
+        .cards {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .ratings {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<header>
+    <h1>Relatório de Análise SonarQube</h1>
+    <div class="meta">
+        Projeto: <strong>autoflow</strong><br>
+        Project Key: <code>autoflow</code><br>
+        Gerado em: 27/08/2026 23:41:08
+    </div>
+
+    <div class="quality passed">
+        Quality Gate: OK
+    </div>
+</header>
+
+<h2>Resumo</h2>
+
+<div class="cards">
+    
+            <div class="card">
+                <div class="label">Bugs</div>
+                <div class="value">0</div>
+            </div>
+            
+            <div class="card">
+                <div class="label">Vulnerabilidades</div>
+                <div class="value">0</div>
+            </div>
+            
+            <div class="card">
+                <div class="label">Security Hotspots</div>
+                <div class="value">0</div>
+            </div>
+            
+            <div class="card">
+                <div class="label">Code Smells</div>
+                <div class="value">163</div>
+            </div>
+            
+            <div class="card">
+                <div class="label">Cobertura</div>
+                <div class="value">0.0%</div>
+            </div>
+            
+            <div class="card">
+                <div class="label">Duplicação</div>
+                <div class="value">16.7%</div>
+            </div>
+            
+            <div class="card">
+                <div class="label">Complexidade</div>
+                <div class="value">737</div>
+            </div>
+            
+            <div class="card">
+                <div class="label">Linhas de código</div>
+                <div class="value">6.813</div>
+            </div>
+            
+</div>
+
+<h2>Qualidade</h2>
+
+<div class="ratings">
+    
+            <div class="rating-card">
+                <span>Reliability</span>
+                <strong>A</strong>
+            </div>
+            
+            <div class="rating-card">
+                <span>Security</span>
+                <strong>A</strong>
+            </div>
+            
+            <div class="rating-card">
+                <span>Maintainability</span>
+                <strong>A</strong>
+            </div>
+            
+</div>
+
+<h2>Issues encontrados</h2>
+
+<table>
+<thead>
+<tr>
+    <th>Severidade</th>
+    <th>Mensagem</th>
+    <th>Arquivo</th>
+    <th>Regra</th>
+</tr>
+</thead>
+<tbody>
+
+            <tr>
+                <td><span class="severity minor">
+                    MINOR
+                </span></td>
+                <td>Define a constant instead of using this literal &#x27;Ordens de Serviço&#x27; 5 times.</td>
+                <td><code>src/AutoFlow.Api/Endpoints/OrdemServicoEndpoints.cs</code></td>
+                <td>csharpsquid:S1192</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity minor">
+                    MINOR
+                </span></td>
+                <td>Define a constant instead of using this literal &#x27;clienteId&#x27; 4 times.</td>
+                <td><code>src/AutoFlow.Api/Endpoints/OrdemServicoEndpoints.cs</code></td>
+                <td>csharpsquid:S1192</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity minor">
+                    MINOR
+                </span></td>
+                <td>Define a constant instead of using this literal &#x27;Ordem de serviço não encontrada.&#x27; 4 times.</td>
+                <td><code>src/AutoFlow.Application/Services/OrdemServicoService.cs</code></td>
+                <td>csharpsquid:S1192</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/OrdemServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/OrdemServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/OrdemServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/OrdemServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/OrdemServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/OrdemServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/OrdemServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/OrdemServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/OrdemServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/OrdemServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/OrdemServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/OrdemServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/OrdemServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/OrdemServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/OrdemServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/OrdemServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/OrdemServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/OrdemServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/OrdemServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/OrdemServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/OrdemServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/OrdemServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/OrdemServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/OrdemServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/OrdemServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/OrdemServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/OrdemServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/OrdemServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/OrdemServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/OrdemServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/OrdemServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/OrdemServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/OrdemServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/OrdemServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/OrdemServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/OrdemServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/OrdemServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/OrdemServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/OrdemServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/OrdemServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/OrdemServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/OrdemServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/OrdemServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/EstoqueEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/PecaInsumoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/ServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/EstoqueEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/EstoqueEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/EstoqueEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/EstoqueEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/EstoqueEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/EstoqueEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/EstoqueEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/EstoqueEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/EstoqueEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/EstoqueEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/EstoqueEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/EstoqueEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/EstoqueEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/EstoqueEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/EstoqueEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/EstoqueEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/EstoqueEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/EstoqueEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/EstoqueEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/EstoqueEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/EstoqueEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/PecaInsumoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/PecaInsumoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/PecaInsumoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/PecaInsumoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/PecaInsumoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/PecaInsumoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/PecaInsumoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/PecaInsumoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/PecaInsumoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/PecaInsumoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/PecaInsumoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/PecaInsumoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/PecaInsumoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/PecaInsumoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/PecaInsumoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/ServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/ServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/ServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/ServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/ServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/ServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/ServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/ServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/ServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/ServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/ServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/ServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/ServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/ServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/ServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/ServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/ServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/ServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/ServicoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/ClienteEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/ClienteEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/ClienteEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/ClienteEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/ClienteEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/ClienteEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/ClienteEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/ClienteEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/ClienteEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/ClienteEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/ClienteEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/ClienteEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/ClienteEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/ClienteEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/ClienteEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/ClienteEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/VeiculoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/VeiculoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/VeiculoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/VeiculoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/VeiculoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/VeiculoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/VeiculoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/VeiculoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/VeiculoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/VeiculoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/VeiculoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/VeiculoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/VeiculoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Remove the unused private setter &#x27;set_OrdemServicoId&#x27;.</td>
+                <td><code>src/AutoFlow.Domain/Models/Orcamento.cs</code></td>
+                <td>csharpsquid:S1144</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Remove the unused private setter &#x27;set_OrdemServicoId&#x27;.</td>
+                <td><code>src/AutoFlow.Domain/Models/OrdemServicoItemPeca.cs</code></td>
+                <td>csharpsquid:S1144</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Remove the unused private setter &#x27;set_OrdemServicoId&#x27;.</td>
+                <td><code>src/AutoFlow.Domain/Models/OrdemServicoItemServico.cs</code></td>
+                <td>csharpsquid:S1144</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity minor">
+                    MINOR
+                </span></td>
+                <td>Rename interface &#x27;IUsuarioDTO&#x27; to match pascal case naming rules, consider using &#x27;IUsuarioDto&#x27;.</td>
+                <td><code>src/AutoFlow.Application/Interfaces/DTOs/IUsuarioDTO.cs</code></td>
+                <td>csharpsquid:S101</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity minor">
+                    MINOR
+                </span></td>
+                <td>Remove this null-forgiving operator; the compiler already knows this expression is not null here.</td>
+                <td><code>src/AutoFlow.Application/Services/UsuarioService.cs</code></td>
+                <td>csharpsquid:S8969</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity minor">
+                    MINOR
+                </span></td>
+                <td>Remove this null-forgiving operator; the compiler already knows this expression is not null here.</td>
+                <td><code>src/AutoFlow.Application/Services/UsuarioService.cs</code></td>
+                <td>csharpsquid:S8969</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity minor">
+                    MINOR
+                </span></td>
+                <td>Remove this null-forgiving operator; the compiler already knows this expression is not null here.</td>
+                <td><code>src/AutoFlow.Application/Services/UsuarioService.cs</code></td>
+                <td>csharpsquid:S8969</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity minor">
+                    MINOR
+                </span></td>
+                <td>Define a constant instead of using this literal &#x27;Serviço não encontrado.&#x27; 4 times.</td>
+                <td><code>src/AutoFlow.Application/Services/ServicoService.cs</code></td>
+                <td>csharpsquid:S1192</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity info">
+                    INFO
+                </span></td>
+                <td>Using public partial class Program { } to make the generated Program class public is no longer required in ASP.NET Core apps. See https://aka.ms/aspnetcore-warnings/ASP0027 for more details.</td>
+                <td><code>src/AutoFlow.Api/Program.cs</code></td>
+                <td>external_roslyn:ASP0027</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Add a &#x27;protected&#x27; constructor or the &#x27;static&#x27; keyword to the class declaration.</td>
+                <td><code>src/AutoFlow.Api/Program.cs</code></td>
+                <td>csharpsquid:S1118</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/VeiculoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.</td>
+                <td><code>tests/AutoFlow.IntegrationTests/Api/VeiculoEndpointsTests.cs</code></td>
+                <td>external_roslyn:xUnit1051</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity minor">
+                    MINOR
+                </span></td>
+                <td>Remove this null-forgiving operator; the compiler already knows this expression is not null here.</td>
+                <td><code>src/AutoFlow.Application/Services/VeiculoService.cs</code></td>
+                <td>csharpsquid:S8969</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity minor">
+                    MINOR
+                </span></td>
+                <td>Remove this null-forgiving operator; the compiler already knows this expression is not null here.</td>
+                <td><code>src/AutoFlow.Application/Services/VeiculoService.cs</code></td>
+                <td>csharpsquid:S8969</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Method has 11 parameters, which is greater than the 7 authorized.</td>
+                <td><code>src/AutoFlow.Domain/Models/Veiculo.cs</code></td>
+                <td>csharpsquid:S107</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity minor">
+                    MINOR
+                </span></td>
+                <td>Rename interface &#x27;IVeiculoDTO&#x27; to match pascal case naming rules, consider using &#x27;IVeiculoDto&#x27;.</td>
+                <td><code>src/AutoFlow.Application/Interfaces/DTOs/IVeiculoDTO.cs</code></td>
+                <td>csharpsquid:S101</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity critical">
+                    CRITICAL
+                </span></td>
+                <td>Add a nested comment explaining why this method is empty, throw a &#x27;NotSupportedException&#x27; or complete the implementation.</td>
+                <td><code>src/AutoFlow.Infrastructure/Persistence/Migrations/20260811011550_ClienteTelefoneEmailValueObject.cs</code></td>
+                <td>csharpsquid:S1186</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity minor">
+                    MINOR
+                </span></td>
+                <td>Rename interface &#x27;IPecaInsumoDTO&#x27; to match pascal case naming rules, consider using &#x27;IPecaInsumoDto&#x27;.</td>
+                <td><code>src/AutoFlow.Application/Interfaces/DTOs/IPecaInsumoDTO.cs</code></td>
+                <td>csharpsquid:S101</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity minor">
+                    MINOR
+                </span></td>
+                <td>Define a constant instead of using this literal &#x27;Estoque não encontrado.&#x27; 4 times.</td>
+                <td><code>src/AutoFlow.Application/Services/EstoqueService.cs</code></td>
+                <td>csharpsquid:S1192</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity minor">
+                    MINOR
+                </span></td>
+                <td>Remove this null-forgiving operator; the compiler already knows this expression is not null here.</td>
+                <td><code>src/AutoFlow.Application/Services/PecaInsumoService.cs</code></td>
+                <td>csharpsquid:S8969</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity minor">
+                    MINOR
+                </span></td>
+                <td>Remove this null-forgiving operator; the compiler already knows this expression is not null here.</td>
+                <td><code>src/AutoFlow.Application/Services/PecaInsumoService.cs</code></td>
+                <td>csharpsquid:S8969</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Constructor has 11 parameters, which is greater than the 7 authorized.</td>
+                <td><code>src/AutoFlow.Domain/Models/Veiculo.cs</code></td>
+                <td>csharpsquid:S107</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity minor">
+                    MINOR
+                </span></td>
+                <td>Remove this null-forgiving operator; the compiler already knows this expression is not null here.</td>
+                <td><code>src/AutoFlow.Application/Services/ServicoService.cs</code></td>
+                <td>csharpsquid:S8969</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity minor">
+                    MINOR
+                </span></td>
+                <td>Remove this null-forgiving operator; the compiler already knows this expression is not null here.</td>
+                <td><code>src/AutoFlow.Application/Services/ServicoService.cs</code></td>
+                <td>csharpsquid:S8969</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity minor">
+                    MINOR
+                </span></td>
+                <td>Rename interface &#x27;IServicoDTO&#x27; to match pascal case naming rules, consider using &#x27;IServicoDto&#x27;.</td>
+                <td><code>src/AutoFlow.Application/Interfaces/DTOs/IServicoDTO.cs</code></td>
+                <td>csharpsquid:S101</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity minor">
+                    MINOR
+                </span></td>
+                <td>Rename interface &#x27;IClienteDTO&#x27; to match pascal case naming rules, consider using &#x27;IClienteDto&#x27;.</td>
+                <td><code>src/AutoFlow.Application/Interfaces/DTOs/IClienteDTO.cs</code></td>
+                <td>csharpsquid:S101</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity minor">
+                    MINOR
+                </span></td>
+                <td>Remove this null-forgiving operator; the compiler already knows this expression is not null here.</td>
+                <td><code>src/AutoFlow.Application/Services/ClienteService.cs</code></td>
+                <td>csharpsquid:S8969</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity minor">
+                    MINOR
+                </span></td>
+                <td>Remove this null-forgiving operator; the compiler already knows this expression is not null here.</td>
+                <td><code>src/AutoFlow.Application/Services/ClienteService.cs</code></td>
+                <td>csharpsquid:S8969</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity critical">
+                    CRITICAL
+                </span></td>
+                <td>Add a nested comment explaining why this method is empty, throw a &#x27;NotSupportedException&#x27; or complete the implementation.</td>
+                <td><code>src/AutoFlow.Infrastructure/Persistence/Migrations/20260801150245_InitialCreate.cs</code></td>
+                <td>csharpsquid:S1186</td>
+            </tr>
+            
+
+            <tr>
+                <td><span class="severity major">
+                    MAJOR
+                </span></td>
+                <td>Await RunAsync instead.</td>
+                <td><code>src/AutoFlow.Api/Program.cs</code></td>
+                <td>csharpsquid:S6966</td>
+            </tr>
+            
+</tbody>
+</table>
+
+<footer>
+    Relatório gerado automaticamente a partir da Web API do SonarQube.
+</footer>
+
+</div>
+</body>
+</html>
