@@ -415,6 +415,64 @@ Duplications: 0,7%
 ```
 
 
+## Gerando um relatório HTML do SonarQube
+
+Além do dashboard do SonarQube, o script
+[gerar_relatorio_sonarqube.py](src/backend/gerar_relatorio_sonarqube.py) gera um
+relatório HTML autocontido (resumo de métricas, ratings e lista de issues
+abertos) a partir da Web API do SonarQube, útil para anexar em entregas ou
+compartilhar sem precisar de acesso ao SonarQube.
+
+### Pré-requisitos
+
+- Python 3
+- Dependências:
+
+```bash
+pip install requests python-dotenv
+```
+
+### Configuração
+
+O script lê `SONAR_URL` e `SONAR_TOKEN` de variáveis de ambiente ou de um
+arquivo `.env` na pasta `src/backend`. Copie o exemplo e preencha o token:
+
+```bash
+cd src/backend
+cp .env.example .env
+```
+
+```text
+SONAR_URL=http://localhost:9000
+SONAR_TOKEN=SEU_TOKEN
+```
+
+> **Importante:** o token precisa ser do tipo **User Token** (gerado em
+> `My Account → Security → Generate Tokens`, opção *User Token*). Tokens do
+> tipo *Global Analysis Token* ou *Project Analysis Token* servem apenas para
+> o scanner enviar análises e retornam `403 Insufficient privileges` ao
+> consultar a API.
+
+Se `SONAR_URL` não for definida, o padrão é `http://localhost:9000`.
+
+### Uso
+
+Com o SonarQube em execução e o projeto já analisado (ver
+[Executando uma análise completa](#executando-uma-análise-completa)):
+
+```bash
+cd src/backend
+python gerar_relatorio_sonarqube.py <project_key>
+```
+
+Por exemplo, para o projeto configurado como `AutoFlow`:
+
+```bash
+python gerar_relatorio_sonarqube.py AutoFlow
+```
+
+O relatório é salvo na pasta atual como `relatorio-sonarqube-<project_key>.html`.
+
 ## Stack
 
 - .NET 10 / ASP.NET Core (Minimal APIs)
