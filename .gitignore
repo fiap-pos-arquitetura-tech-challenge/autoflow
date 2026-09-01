@@ -432,3 +432,8 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# Environment variable files
+.env
+.env.*
+!.env.example

@@ -20,8 +20,8 @@ namespace AutoFlow.Domain.ValueObjects
             var placaMercosul = @"^[A-Z]{3}[0-9][A-Z][0-9]{2}$";
             var placaAntiga = @"^[A-Z]{3}[0-9]{4}$";
 
-            if (!Regex.IsMatch(valor, placaMercosul) &&
-                !Regex.IsMatch(valor, placaAntiga))
+            if (!Regex.IsMatch(valor, placaMercosul, RegexOptions.None, TimeSpan.FromMilliseconds(100)) &&
+                !Regex.IsMatch(valor, placaAntiga, RegexOptions.None, TimeSpan.FromMilliseconds(100)))
             {
                 throw new PlacaInvalidaException("Formato de placa inválido.");
             }
