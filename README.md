@@ -37,6 +37,71 @@ src/backend/
 - **Ordem de Serviço** — controla o fluxo completo da recepção à entrega do veículo, com diagnóstico,
   serviços e peças em snapshot, orçamento, aprovação/reprovação pelo cliente, execução e histórico de datas.
 
+## Arquitetura e decisões técnicas
+
+### Por que arquitetura em camadas
+
+A solução segue a regra de dependência da Clean Architecture: as setas de
+referência de projeto sempre apontam para dentro, em direção ao domínio.
+
+```text
+AutoFlow.Api  →  AutoFlow.Application  →  AutoFlow.Domain
+                          ↑
+              AutoFlow.Infrastructure
+```
+
+- **Domain** não referencia nenhum outro projeto — concentra entidades, value
+  objects e regras de negócio puras, sem dependência de EF Core, ASP.NET ou
+  qualquer detalhe de infraestrutura.
+- **Application** referencia apenas o Domain — define casos de uso, DTOs e
+  interfaces (`IXxxRepositorio`, `IXxxService`) que a Infrastructure implementa,
+  seguindo o Dependency Inversion Principle.
+- **Infrastructure** implementa as interfaces da Application (EF Core,
+  repositórios, geração de token) e pode ser trocada (ex.: outro banco, outro
+  provedor de token) sem alterar regra de negócio.
+- **Api** é a camada mais externa, responsável por expor os casos de uso via
+  Minimal APIs.
+
+O objetivo é manter o domínio testável e isolado de detalhes de framework, e
+permitir que decisões de infraestrutura (banco, autenticação) mudem com o
+menor impacto possível no restante do código. Optou-se por **Minimal APIs**
+em vez de Controllers por serem mais enxutas e alinhadas à direção atual do
+ASP.NET Core para APIs simples.
+
+### Por que JWT customizado em vez de ASP.NET Core Identity
+
+A autenticação foi implementada com entidades próprias (`Usuario`/`Perfil`) e
+`Microsoft.AspNetCore.Authentication.JwtBearer`, em vez do ASP.NET Core
+Identity. O Identity adiciona ~7 tabelas próprias (`AspNetUsers`,
+`AspNetRoles`, etc.), exige que o `DbContext` herde de `IdentityDbContext` e,
+mesmo assim, não emite JWT sozinho — ainda seria necessário o JwtBearer por
+cima para uma API. Como o projeto começou do zero em autenticação e a
+necessidade era apenas login + autorização por perfil (sem reset de senha,
+lockout ou 2FA), optou-se pelo caminho mais enxuto, consistente com o padrão
+de entidades (`BaseModel`) já usado no domínio.
+
+### Por que o padrão Result para erros de negócio
+
+Os serviços de Application retornam `Result`/`Result<T>` (com `ErrorType`:
+`Validation`, `NotFound`, `Conflict`, `Unauthorized`) em vez de lançar exceção
+para falhas esperadas (regra de negócio violada, recurso não encontrado,
+duplicidade). A camada Api traduz esse resultado em HTTP via
+[ResultExtensions](src/backend/src/AutoFlow.Api/Extensions/ResultExtensions.cs),
+mantendo o fluxo de erro previsível como parte da assinatura do método, sem o
+custo de exceções para controle de fluxo. Já invariantes do próprio domínio
+(ex.: CPF inválido, placa inválida) continuam sendo `DomainException`,
+tratadas globalmente pelo
+[GlobalExceptionHandler](src/backend/src/AutoFlow.Api/Middlewares/GlobalExceptionHandler.cs).
+
+### Por que SQLite em memória nos testes de integração
+
+Os testes de integração sobem a API completa via `WebApplicationFactory`,
+mas substituem o SQL Server por **SQLite em memória**. Isso mantém os testes
+rápidos, isolados e sem exigir um SQL Server disponível para rodar `dotnet
+test` (inclusive em CI), enquanto a aplicação em execução real continua usando
+SQL Server — a troca de provider é possível justamente porque a Infrastructure
+está isolada atrás de interfaces da Application.
+
 ## Pré-requisitos
 
 - [.NET SDK 10.0](https://dotnet.microsoft.com/download)
