@@ -1,7 +1,8 @@
-﻿using AutoFlow.Application.Interfaces.Services;
-using AutoFlow.Application.Interfaces.Repositories;
+﻿using AutoFlow.Application.Interfaces.Repositories;
+using AutoFlow.Application.Interfaces.Services;
 using AutoFlow.Application.Services;
 using AutoFlow.Infrastructure.Persistence.Repositories;
+using AutoFlow.Infrastructure.Security;
 
 namespace AutoFlow.Api.Configuration
 {
@@ -11,6 +12,23 @@ namespace AutoFlow.Api.Configuration
         {
             services.AddScoped<IClienteService, ClienteService>();
             services.AddScoped<IClienteRepositorio, ClienteRepositorio>();
+            services.AddScoped<IVeiculoService, VeiculoService>();
+            services.AddScoped<IVeiculoRepositorio, VeiculoRepositorio>();
+            services.AddScoped<IUsuarioService, UsuarioService>();
+            services.AddScoped<IUsuarioRepositorio, UsuarioRepositorio>();
+            services.AddScoped<ITokenService, TokenService>();
+
+            services.AddScoped<IServicoService, ServicoService>();
+            services.AddScoped<IServicoRepositorio, ServicoRepositorio>();
+
+            services.AddScoped<IPecaInsumoService, PecaInsumoService>();
+            services.AddScoped<IPecaInsumoRepositorio, PecaInsumoRepositorio>();
+
+            services.AddScoped<IEstoqueService, EstoqueService>();
+            services.AddScoped<IEstoqueRepositorio, EstoqueRepositorio>();
+
+            services.AddScoped<IOrdemServicoService, OrdemServicoService>();
+            services.AddScoped<IOrdemServicoRepositorio, OrdemServicoRepositorio>();
 
             return services;
         }

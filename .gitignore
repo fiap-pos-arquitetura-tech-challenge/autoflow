@@ -17,6 +17,11 @@
 # Mono auto generated files
 mono_crash.*
 
+.idea/
+
+#SonarQube files
+.sonarqube/
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/
@@ -427,3 +432,8 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# Environment variable files
+.env
+.env.*
+!.env.example

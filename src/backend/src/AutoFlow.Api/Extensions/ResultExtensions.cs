@@ -33,13 +33,16 @@ namespace AutoFlow.Api.Extensions
 
         private static IResult ToErrorResult(Result result)
         {
-            return result.ErrorType switch
+            var statusCode = result.ErrorType switch
             {
-                ErrorType.Validation => Results.BadRequest(result.Error),
-                ErrorType.NotFound => Results.NotFound(result.Error),
-                ErrorType.Conflict => Results.Conflict(result.Error),
-                _ => Results.Problem(result.Error)
+                ErrorType.Validation => StatusCodes.Status400BadRequest,
+                ErrorType.NotFound => StatusCodes.Status404NotFound,
+                ErrorType.Conflict => StatusCodes.Status409Conflict,
+                ErrorType.Unauthorized => StatusCodes.Status401Unauthorized,
+                _ => StatusCodes.Status500InternalServerError
             };
+
+            return Results.Problem(detail: result.Error, statusCode: statusCode);
         }
     }
 }
