@@ -26,10 +26,10 @@ jobs:
           dotnet-version: '10.0.x'
 
       - name: Restaurar dependências
-        run: dotnet restore
+        run: dotnet restore ./src/backend/AutoFlow.slnx 
 
       - name: Compilar projeto
-        run: dotnet build --no-restore --configuration Release
+        run: dotnet build ./src/backend/AutoFlow.slnx --no-restore --configuration Release
 
       - name: Executar testes
-        run: dotnet test --no-build --configuration Release
+        run: dotnet test ./src/backend/AutoFlow.slnx --no-build --configuration Release
