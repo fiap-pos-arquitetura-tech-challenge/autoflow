@@ -4,11 +4,11 @@ name: CI
 on:
   push:
     branches:
-      - feature/aws
+      - feature/devops-aws
 
   pull_request:
     branches:
-      - feature/aws
+      - feature/devops-aws
 
 jobs:
   build-and-test:
