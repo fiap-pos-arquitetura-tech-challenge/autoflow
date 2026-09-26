@@ -37,3 +37,13 @@ jobs:
 
       - name: Executar testes
         run: dotnet test AutoFlow.slnx --no-build --configuration Release
+
+      - name: Build Docker image
+        run: |
+          VERSION="0.${{ github.run_number }}"
+
+          docker build \
+            -t autoflow:latest \
+            -t autoflow:${VERSION} \
+            -f src/AutoFlow.Api/Dockerfile \
+            .
