@@ -10,6 +10,10 @@ on:
     branches:
       - feature/devops-aws
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   build-and-test:
 
@@ -23,6 +27,12 @@ jobs:
 
       - name: Checkout do código
         uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::082229155154:role/GitHubActionsECRPush-Techchallengepos
+          aws-region: us-east-2
 
       - name: Configurar .NET
         uses: actions/setup-dotnet@v4
@@ -43,7 +53,7 @@ jobs:
           VERSION="0.${{ github.run_number }}"
 
           docker build \
-            -t autoflow:latest \
-            -t autoflow:${VERSION} \
+            -t autoflowapi:latest \
+            -t autoflowapi:${VERSION} \
             -f src/AutoFlow.Api/Dockerfile \
             .
