@@ -4,6 +4,10 @@ name: CI
 on:
   push:
     branches:
+      - feature/devops-aws
+
+  pull_request:
+    branches:
       - feature/devops-aws  
 
 permissions:
@@ -58,3 +62,12 @@ jobs:
             -t autoflowapi:${VERSION} \
             -f src/AutoFlow.Api/Dockerfile \
             .
+
+      - name: Push Docker image to ECR
+        run: |
+          VERSION="0.${{ github.run_number }}"
+          ECR_REGISTRY="${{ steps.login-ecr.outputs.registry }}"
+
+          docker tag autoflowapi:${VERSION} ${ECR_REGISTRY}/autoflow:${VERSION}
+
+          docker push ${ECR_REGISTRY}/autoflow:${VERSION}
