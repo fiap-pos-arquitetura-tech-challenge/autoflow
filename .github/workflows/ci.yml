@@ -4,11 +4,7 @@ name: CI
 on:
   push:
     branches:
-      - feature/devops-aws
-
-  pull_request:
-    branches:
-      - feature/devops-aws
+      - feature/devops-aws  
 
 permissions:
   id-token: write
@@ -27,6 +23,13 @@ jobs:
 
       - name: Checkout do código
         uses: actions/checkout@v4
+
+      - name: Debug GitHub Context
+        run: |
+          echo "ref=${{ github.ref }}"
+          echo "ref_name=${{ github.ref_name }}"
+          echo "event=${{ github.event_name }}"
+          echo "repository=${{ github.repository }}"
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
