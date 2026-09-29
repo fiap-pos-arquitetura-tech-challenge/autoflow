@@ -71,3 +71,13 @@ jobs:
           docker tag autoflowapi:${VERSION} ${ECR_REGISTRY}/postech/autoflowapi:${VERSION}
 
           docker push ${ECR_REGISTRY}/postech/autoflowapi:${VERSION}
+
+      - name: Configurar acesso ao EKS
+        run: |
+          aws eks update-kubeconfig \
+            --region us-east-2 \
+            --name autoflow-eks
+
+      - name: Verificar acesso ao EKS
+        run: |
+          kubectl get nodes

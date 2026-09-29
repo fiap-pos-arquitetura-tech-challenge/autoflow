@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: autoflow-api
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: autoflow-api
+
+  template:
+    metadata:
+      labels:
+        app: autoflow-api
+
+    spec:
+      containers:
+        - name: autoflow-api
+          image: 082229155154.dkr.ecr.us-east-2.amazonaws.com/postech/autoflowapi:${IMAGE_TAG}
+
+          ports:
+            - containerPort: 8080
