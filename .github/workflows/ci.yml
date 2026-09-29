@@ -81,3 +81,10 @@ jobs:
       - name: Verificar acesso ao EKS
         run: |
           kubectl get nodes
+
+      - name: Deploy no Kubernetes
+        working-directory: .
+        run: |
+          VERSION="0.${{ github.run_number }}"
+
+          sed "s|\${IMAGE_TAG}|${VERSION}|g" k8s/deployment.yaml | kubectl apply -f -
