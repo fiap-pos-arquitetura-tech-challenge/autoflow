@@ -27,9 +27,10 @@ on:
         options:
           - plan
           - apply
+          - destroy
 
       confirm:
-        description: "Para aplicar, digite APPLY"
+        description: "Digite APPLY para aplicar ou DESTROY para destruir"
         required: false
         default: ""
         type: string  
@@ -74,3 +75,25 @@ jobs:
       - name: Terraform Apply
         if: github.event_name == 'workflow_dispatch' && inputs.action == 'apply' && inputs.confirm == 'APPLY'
         run: terraform apply -auto-approve
+
+      - name: Remover recursos Kubernetes
+        if: github.event_name == 'workflow_dispatch' && inputs.action == 'destroy' && inputs.confirm == 'DESTROY'
+        working-directory: .
+        run: |
+          aws eks update-kubeconfig \
+          --region us-east-2 \
+          --name autoflow-eks
+
+          kubectl delete -f k8s/service.yaml --ignore-not-found=true
+          kubectl delete -f k8s/deployment.yaml --ignore-not-found=true
+
+      - name: Aguardar limpeza do Load Balancer
+        if: github.event_name == 'workflow_dispatch' && inputs.action == 'destroy' && inputs.confirm == 'DESTROY'
+        working-directory: .
+        run: |
+          echo "Aguardando a AWS finalizar a remoção do Load Balancer..."
+          sleep 90
+
+      - name: Terraform Destroy
+        if: github.event_name == 'workflow_dispatch' && inputs.action == 'destroy' && inputs.confirm == 'DESTROY'
+        run: terraform destroy -auto-approve
