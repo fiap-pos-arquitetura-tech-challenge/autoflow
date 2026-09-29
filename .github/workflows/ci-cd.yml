@@ -88,3 +88,4 @@ jobs:
           VERSION="0.${{ github.run_number }}"
 
           sed "s|\${IMAGE_TAG}|${VERSION}|g" k8s/deployment.yaml | kubectl apply -f -
+          kubectl apply -f k8s/service.yaml

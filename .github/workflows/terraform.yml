@@ -26,7 +26,13 @@ on:
         type: choice
         options:
           - plan
-          - apply  
+          - apply
+
+      confirm:
+        description: "Para aplicar, digite APPLY"
+        required: false
+        default: ""
+        type: string  
 
 jobs:
   terraform:
@@ -66,5 +72,5 @@ jobs:
         run: terraform plan
 
       - name: Terraform Apply
-        if: github.event_name == 'workflow_dispatch' && inputs.action == 'apply'
+        if: github.event_name == 'workflow_dispatch' && inputs.action == 'apply' && inputs.confirm == 'APPLY'
         run: terraform apply -auto-approve
