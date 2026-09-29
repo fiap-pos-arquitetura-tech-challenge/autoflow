@@ -1,7 +1,6 @@
 name: Terraform
 
-on:
-  workflow_dispatch:
+on:  
   push:
     branches:
       - feature/devops-aws
@@ -16,7 +15,18 @@ on:
 
     paths:
       - 'infra/**'
-      - '.github/workflows/terraform.yml'  
+      - '.github/workflows/terraform.yml'
+
+  workflow_dispatch:
+  inputs:
+    action:
+      description: "Ação do Terraform"
+      required: true
+      default: "plan"
+      type: choice
+      options:
+        - plan
+        - apply  
 
 jobs:
   terraform:
