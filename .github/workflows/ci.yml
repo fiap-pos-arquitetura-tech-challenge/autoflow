@@ -1,5 +1,5 @@
 # CI AutoFlow
-name: CI
+name: CI/CD
 
 on:
   push:
