@@ -7,6 +7,7 @@ on:
 
     paths:
       - 'infra/**'
+      - '.github/workflows/terraform.yml'
 
   pull_request:
     branches:
@@ -14,6 +15,9 @@ on:
 
     paths:
       - 'infra/**'
+      - '.github/workflows/terraform.yml'
+
+  workflow_dispatch:
 
 jobs:
   terraform:
