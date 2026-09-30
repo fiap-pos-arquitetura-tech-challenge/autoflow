@@ -30,10 +30,16 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();    
 }
 
-if (app.Environment.IsDevelopment() ||
-    app.Configuration.GetValue<bool>("Database:ApplyMigrations"))
+var applyMigrations = app.Configuration.GetValue<bool>("Database:ApplyMigrations");
+
+if (app.Environment.IsDevelopment() || applyMigrations)
 {
     await app.Services.ApplyMigrationsAndSeedAsync();
+}
+
+if (applyMigrations)
+{
+    return;
 }
 
 app.UseExceptionHandler();
