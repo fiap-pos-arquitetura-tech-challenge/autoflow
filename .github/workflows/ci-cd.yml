@@ -82,6 +82,48 @@ jobs:
         run: |
           kubectl get nodes
 
+      - name: Configurar secrets no Kubernetes
+        working-directory: .
+        env:
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+        run: |
+          CONNECTION_STRING="Server=autoflow-sqlserver.c7yk60eyi6ya.us-east-2.rds.amazonaws.com,1433;Database=AutoFlow;User Id=autoflowadmin;Password=${DB_PASSWORD};TrustServerCertificate=True"
+
+          kubectl create secret generic autoflow-secrets \
+            --from-literal="ConnectionStrings__DefaultConnection=${CONNECTION_STRING}" \
+            --from-literal="Jwt__Secret=${JWT_SECRET}" \
+            --dry-run=client \
+            -o yaml | kubectl apply -f -
+
+      - name: Aplicar ConfigMap
+        working-directory: .
+        run: |
+          kubectl apply -f k8s/configmap.yaml
+
+      - name: Executar migrations
+        working-directory: .
+        run: |
+          VERSION="0.${{ github.run_number }}"
+
+          kubectl delete job autoflow-db-migration --ignore-not-found=true
+
+          sed "s|\${IMAGE_TAG}|${VERSION}|g" k8s/migration-job.yaml | kubectl apply -f -
+
+          if ! kubectl wait \
+            --for=condition=complete \
+            --timeout=300s \
+            job/autoflow-db-migration
+          then
+            echo "Migration falhou ou excedeu o tempo limite."
+            kubectl logs job/autoflow-db-migration --all-containers=true || true
+            kubectl describe job autoflow-db-migration || true
+            exit 1
+          fi
+
+          echo "Migration concluída com sucesso."
+          kubectl logs job/autoflow-db-migration
+
       - name: Deploy no Kubernetes
         working-directory: .
         run: |
