@@ -35,6 +35,7 @@ resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
 resource "aws_eks_cluster" "autoflow" {
   name     = "${var.project_name}-eks"
   role_arn = aws_iam_role.eks_cluster.arn
+  version  = "1.36"
 
   vpc_config {
     subnet_ids = [

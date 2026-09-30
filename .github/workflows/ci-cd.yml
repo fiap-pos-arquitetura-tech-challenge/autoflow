@@ -2,6 +2,8 @@
 name: CI/CD
 
 on:
+  workflow_dispatch:
+  
   push:
     branches:
       - feature/devops-aws
@@ -10,8 +12,7 @@ on:
     branches:
       - feature/devops-aws  
 
-permissions:
-  id-token: write
+permissions: 
   contents: read
 
 jobs:
@@ -26,18 +27,7 @@ jobs:
     steps:
 
       - name: Checkout do código
-        uses: actions/checkout@v4      
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-2
-
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
+        uses: actions/checkout@v4    
 
       - name: Configurar .NET
         uses: actions/setup-dotnet@v4
@@ -53,7 +43,21 @@ jobs:
       - name: Executar testes
         run: dotnet test AutoFlow.slnx --no-build --configuration Release
 
+      - name: Configure AWS credentials
+        if: github.event_name == 'push'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+
+      - name: Login to Amazon ECR
+        if: github.event_name == 'push'
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
       - name: Build Docker image
+        if: github.event_name == 'push'
         run: |
           VERSION="0.${{ github.run_number }}"
 
@@ -64,6 +68,7 @@ jobs:
             .
 
       - name: Push Docker image to ECR
+        if: github.event_name == 'push'
         run: |
           VERSION="0.${{ github.run_number }}"
           ECR_REGISTRY="${{ steps.login-ecr.outputs.registry }}"
@@ -73,16 +78,32 @@ jobs:
           docker push ${ECR_REGISTRY}/postech/autoflowapi:${VERSION}
 
       - name: Configurar acesso ao EKS
+        if: github.event_name == 'push'
         run: |
           aws eks update-kubeconfig \
             --region us-east-2 \
             --name autoflow-eks
 
       - name: Verificar acesso ao EKS
+        if: github.event_name == 'push'
         run: |
           kubectl get nodes
 
+      - name: Instalar Metrics Server
+        if: github.event_name == 'push'
+        working-directory: .
+        run: |
+          kubectl apply \
+            --request-timeout=60s \
+            -f https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.9.0/components.yaml
+
+          kubectl rollout status \
+            deployment/metrics-server \
+            -n kube-system \
+            --timeout=180s
+
       - name: Configurar secrets no Kubernetes
+        if: github.event_name == 'push'
         working-directory: .
         env:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
@@ -97,11 +118,13 @@ jobs:
             -o yaml | kubectl apply -f -
 
       - name: Aplicar ConfigMap
+        if: github.event_name == 'push'
         working-directory: .
         run: |
           kubectl apply -f k8s/configmap.yaml
 
       - name: Executar migrations
+        if: github.event_name == 'push'
         working-directory: .
         run: |
           VERSION="0.${{ github.run_number }}"
@@ -125,9 +148,22 @@ jobs:
           kubectl logs job/autoflow-db-migration
 
       - name: Deploy no Kubernetes
+        if: github.event_name == 'push'
         working-directory: .
         run: |
           VERSION="0.${{ github.run_number }}"
 
-          sed "s|\${IMAGE_TAG}|${VERSION}|g" k8s/deployment.yaml | kubectl apply -f -
-          kubectl apply -f k8s/service.yaml
+          echo "Aplicando Deployment versão ${VERSION}..."
+          sed "s|\${IMAGE_TAG}|${VERSION}|g" k8s/deployment.yaml | \
+            kubectl apply --request-timeout=60s -f -
+
+          echo "Aplicando Service..."
+          kubectl apply --request-timeout=60s -f k8s/service.yaml
+
+          echo "Aplicando HPA..."
+          kubectl apply --request-timeout=60s -f k8s/hpa.yaml
+
+          echo "Aguardando rollout..."
+          kubectl rollout status deployment/autoflow-api --timeout=180s
+
+          echo "Deploy concluído."
