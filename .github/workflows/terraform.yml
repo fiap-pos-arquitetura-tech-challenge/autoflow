@@ -3,7 +3,7 @@ name: Terraform
 on:  
   push:
     branches:
-      - feature/devops-aws
+      - main
 
     paths:
       - 'infra/**'
@@ -11,7 +11,7 @@ on:
 
   pull_request:
     branches:
-      - feature/devops-aws
+      - main
 
     paths:
       - 'infra/**'
