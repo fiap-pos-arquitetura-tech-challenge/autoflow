@@ -24,7 +24,7 @@ builder.Services.AddSecurityConfiguration(builder.Configuration);
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (/*app.Environment.IsDevelopment()*/true)
+if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.MapScalarApiReference();    
@@ -48,7 +48,7 @@ app.UseHttpsRedirection();
 app.UseSecurityConfiguration();
 
 
-app.MapGet("/", () => "Ok System is running, 2");
+app.MapGet("/", () => "Ok System is running");
 app.MapAuthEndpoints();
 app.MapClienteEndpoints();
 app.MapServicoEndpoints();

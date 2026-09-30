@@ -6,11 +6,11 @@ on:
 
   push:
     branches:
-      - feature/devops-aws
+      - main
 
   pull_request:
     branches:
-      - feature/devops-aws  
+      - main  
 
 permissions: 
   contents: read
