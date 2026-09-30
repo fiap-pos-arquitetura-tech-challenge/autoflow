@@ -48,7 +48,7 @@ app.UseHttpsRedirection();
 app.UseSecurityConfiguration();
 
 
-app.MapGet("/", () => "Ok System is running, ateração feita!");
+app.MapGet("/", () => "Ok System is running, 2");
 app.MapAuthEndpoints();
 app.MapClienteEndpoints();
 app.MapServicoEndpoints();
