@@ -29,6 +29,12 @@ spec:
           ports:
             - containerPort: 8080
 
+          envFrom:
+            - configMapRef:
+                name: autoflow-config
+            - secretRef:
+                name: autoflow-secrets
+
           readinessProbe:
             httpGet:
               path: /

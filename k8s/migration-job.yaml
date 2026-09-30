@@ -1,0 +1,30 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: autoflow-db-migration
+
+spec:
+  backoffLimit: 2
+
+  template:
+    metadata:
+      labels:
+        app: autoflow-db-migration
+
+    spec:
+      restartPolicy: Never
+
+      containers:
+        - name: migration
+          image: 082229155154.dkr.ecr.us-east-2.amazonaws.com/postech/autoflowapi:${IMAGE_TAG}
+
+          envFrom:
+            - configMapRef:
+                name: autoflow-config
+
+            - secretRef:
+                name: autoflow-secrets
+
+          env:
+            - name: Database__ApplyMigrations
+              value: "true"

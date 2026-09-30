@@ -27,8 +27,12 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-    app.MapScalarApiReference();
+    app.MapScalarApiReference();    
+}
 
+if (app.Environment.IsDevelopment() ||
+    app.Configuration.GetValue<bool>("Database:ApplyMigrations"))
+{
     await app.Services.ApplyMigrationsAndSeedAsync();
 }
 
