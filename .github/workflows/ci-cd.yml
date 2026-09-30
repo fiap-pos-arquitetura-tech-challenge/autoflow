@@ -116,6 +116,8 @@ jobs:
         env:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          BOOTSTRAP_COLABORADOR_EMAIL: ${{ secrets.BOOTSTRAP_COLABORADOR_EMAIL }}
+          BOOTSTRAP_COLABORADOR_SENHA: ${{ secrets.BOOTSTRAP_COLABORADOR_SENHA }}
         run: |
           RDS_ENDPOINT=$(aws rds describe-db-instances \
           --db-instance-identifier autoflow-sqlserver \
@@ -131,11 +133,13 @@ jobs:
 
           CONNECTION_STRING="Server=${RDS_ENDPOINT},1433;Database=AutoFlow;User Id=autoflowadmin;Password=${DB_PASSWORD};TrustServerCertificate=True"
 
-          kubectl create secret generic autoflow-secrets \
+           kubectl create secret generic autoflow-secrets \
             --from-literal="ConnectionStrings__DefaultConnection=${CONNECTION_STRING}" \
             --from-literal="Jwt__Secret=${JWT_SECRET}" \
-            --dry-run=client \
-            -o yaml | kubectl apply -f -      
+            --from-literal="Bootstrap__Colaborador__Email=${BOOTSTRAP_COLABORADOR_EMAIL}" \
+          --from-literal="Bootstrap__Colaborador__Senha=${BOOTSTRAP_COLABORADOR_SENHA}" \
+          --dry-run=client \
+          -o yaml | kubectl apply -f -               
 
       - name: Executar migrations
         if: env.SHOULD_DEPLOY == 'true'
