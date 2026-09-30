@@ -40,12 +40,14 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    env:
+      TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
+
     defaults:
       run:
         working-directory: infra
 
     steps:
-
       - name: Checkout do código
         uses: actions/checkout@v4
 
@@ -80,12 +82,37 @@ jobs:
         if: github.event_name == 'workflow_dispatch' && inputs.action == 'destroy' && inputs.confirm == 'DESTROY'
         working-directory: .
         run: |
-          aws eks update-kubeconfig \
-          --region us-east-2 \
-          --name autoflow-eks
+          if aws eks describe-cluster \
+            --region us-east-2 \
+            --name autoflow-eks > /dev/null 2>&1
+          then
+            echo "Cluster EKS encontrado."
 
-          kubectl delete -f k8s/service.yaml --ignore-not-found=true
-          kubectl delete -f k8s/deployment.yaml --ignore-not-found=true
+            aws eks update-kubeconfig \
+            --region us-east-2 \
+            --name autoflow-eks          
+          
+            echo "Removendo Service e Load Balancer..."
+            kubectl delete -f k8s/service.yaml --ignore-not-found=true
+
+            echo "Removendo HPA..."
+            kubectl delete -f k8s/hpa.yaml --ignore-not-found=true
+
+            echo "Removendo Deployment..."
+            kubectl delete -f k8s/deployment.yaml --ignore-not-found=true
+
+            echo "Removendo Migration Job..."
+            kubectl delete job autoflow-db-migration --ignore-not-found=true
+
+            echo "Removendo ConfigMap..."
+            kubectl delete -f k8s/configmap.yaml --ignore-not-found=true
+
+            echo "Removendo Secret..."
+            kubectl delete secret autoflow-secrets --ignore-not-found=true
+
+          else
+            echo "Cluster EKS não encontrado. Pulando limpeza dos recursos Kubernetes."
+          fi
 
       - name: Aguardar limpeza do Load Balancer
         if: github.event_name == 'workflow_dispatch' && inputs.action == 'destroy' && inputs.confirm == 'DESTROY'

@@ -3,7 +3,7 @@ name: CI/CD
 
 on:
   workflow_dispatch:
-  
+
   push:
     branches:
       - feature/devops-aws
@@ -20,12 +20,14 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    env:
+      SHOULD_DEPLOY: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
+
     defaults:
       run:
         working-directory: src/backend
 
     steps:
-
       - name: Checkout do código
         uses: actions/checkout@v4    
 
@@ -44,7 +46,7 @@ jobs:
         run: dotnet test AutoFlow.slnx --no-build --configuration Release
 
       - name: Configure AWS credentials
-        if: github.event_name == 'push'
+        if: env.SHOULD_DEPLOY == 'true'
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -52,12 +54,12 @@ jobs:
           aws-region: us-east-2
 
       - name: Login to Amazon ECR
-        if: github.event_name == 'push'
+        if: env.SHOULD_DEPLOY == 'true'
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build Docker image
-        if: github.event_name == 'push'
+        if: env.SHOULD_DEPLOY == 'true'
         run: |
           VERSION="0.${{ github.run_number }}"
 
@@ -68,7 +70,7 @@ jobs:
             .
 
       - name: Push Docker image to ECR
-        if: github.event_name == 'push'
+        if: env.SHOULD_DEPLOY == 'true'
         run: |
           VERSION="0.${{ github.run_number }}"
           ECR_REGISTRY="${{ steps.login-ecr.outputs.registry }}"
@@ -78,19 +80,19 @@ jobs:
           docker push ${ECR_REGISTRY}/postech/autoflowapi:${VERSION}
 
       - name: Configurar acesso ao EKS
-        if: github.event_name == 'push'
+        if: env.SHOULD_DEPLOY == 'true'
         run: |
           aws eks update-kubeconfig \
             --region us-east-2 \
             --name autoflow-eks
 
       - name: Verificar acesso ao EKS
-        if: github.event_name == 'push'
+        if: env.SHOULD_DEPLOY == 'true'
         run: |
           kubectl get nodes
 
       - name: Instalar Metrics Server
-        if: github.event_name == 'push'
+        if: env.SHOULD_DEPLOY == 'true'
         working-directory: .
         run: |
           kubectl apply \
@@ -102,29 +104,41 @@ jobs:
             -n kube-system \
             --timeout=180s
 
+      - name: Aplicar ConfigMap
+        if: env.SHOULD_DEPLOY == 'true'
+        working-directory: .
+        run: |
+          kubectl apply -f k8s/configmap.yaml
+
       - name: Configurar secrets no Kubernetes
-        if: github.event_name == 'push'
+        if: env.SHOULD_DEPLOY == 'true'
         working-directory: .
         env:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
         run: |
-          CONNECTION_STRING="Server=autoflow-sqlserver.c7yk60eyi6ya.us-east-2.rds.amazonaws.com,1433;Database=AutoFlow;User Id=autoflowadmin;Password=${DB_PASSWORD};TrustServerCertificate=True"
+          RDS_ENDPOINT=$(aws rds describe-db-instances \
+          --db-instance-identifier autoflow-sqlserver \
+          --query "DBInstances[0].Endpoint.Address" \
+          --output text)
+
+          if [ -z "$RDS_ENDPOINT" ] || [ "$RDS_ENDPOINT" = "None" ]; then
+            echo "Não foi possível obter o endpoint do RDS."
+            exit 1
+          fi
+
+          echo "RDS encontrado: ${RDS_ENDPOINT}"
+
+          CONNECTION_STRING="Server=${RDS_ENDPOINT},1433;Database=AutoFlow;User Id=autoflowadmin;Password=${DB_PASSWORD};TrustServerCertificate=True"
 
           kubectl create secret generic autoflow-secrets \
             --from-literal="ConnectionStrings__DefaultConnection=${CONNECTION_STRING}" \
             --from-literal="Jwt__Secret=${JWT_SECRET}" \
             --dry-run=client \
-            -o yaml | kubectl apply -f -
-
-      - name: Aplicar ConfigMap
-        if: github.event_name == 'push'
-        working-directory: .
-        run: |
-          kubectl apply -f k8s/configmap.yaml
+            -o yaml | kubectl apply -f -      
 
       - name: Executar migrations
-        if: github.event_name == 'push'
+        if: env.SHOULD_DEPLOY == 'true'
         working-directory: .
         run: |
           VERSION="0.${{ github.run_number }}"
@@ -148,7 +162,7 @@ jobs:
           kubectl logs job/autoflow-db-migration
 
       - name: Deploy no Kubernetes
-        if: github.event_name == 'push'
+        if: env.SHOULD_DEPLOY == 'true'
         working-directory: .
         run: |
           VERSION="0.${{ github.run_number }}"
