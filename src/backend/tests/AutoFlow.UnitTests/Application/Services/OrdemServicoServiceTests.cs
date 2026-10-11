@@ -515,6 +515,53 @@ namespace AutoFlow.UnitTests.Application.Services
         }
 
         [Fact]
+        public async Task ObterTodosAsync_DeveOrdenarPorPrioridadeDeStatusEMaisAntigaPrimeiro_ExcluindoFinalizadasEEntregues()
+        {
+            var recebida = new OrdemServico(1, 2) { Id = 1 };
+
+            var emDiagnostico = new OrdemServico(1, 2) { Id = 2 };
+            emDiagnostico.IniciarDiagnostico();
+
+            var aguardandoAprovacao = CriarOrdemAguardandoAprovacao();
+            aguardandoAprovacao.Id = 3;
+
+            var emExecucaoAntiga = CriarOrdemAguardandoAprovacao();
+            emExecucaoAntiga.Id = 4;
+            emExecucaoAntiga.AprovarOrcamento();
+
+            var emExecucaoNova = CriarOrdemAguardandoAprovacao();
+            emExecucaoNova.Id = 5;
+            emExecucaoNova.AprovarOrcamento();
+
+            var finalizada = CriarOrdemAguardandoAprovacao();
+            finalizada.Id = 6;
+            finalizada.AprovarOrcamento();
+            var itemServicoFinalizada = Assert.Single(finalizada.Servicos);
+            itemServicoFinalizada.Id = 100;
+            finalizada.IniciarExecucaoServico(100);
+            finalizada.FinalizarExecucaoServico(100);
+            finalizada.Finalizar();
+
+            var entregue = CriarOrdemAguardandoAprovacao();
+            entregue.Id = 7;
+            entregue.AprovarOrcamento();
+            var itemServicoEntregue = Assert.Single(entregue.Servicos);
+            itemServicoEntregue.Id = 101;
+            entregue.IniciarExecucaoServico(101);
+            entregue.FinalizarExecucaoServico(101);
+            entregue.Finalizar();
+            entregue.Entregar();
+
+            _ordemServicoRepositorioMock
+                .Setup(r => r.ObterTodasCompletasAsync())
+                .ReturnsAsync([finalizada, recebida, entregue, emExecucaoNova, aguardandoAprovacao, emDiagnostico, emExecucaoAntiga]);
+
+            var resultado = (await _service.ObterTodosAsync()).ToList();
+
+            Assert.Equal([4, 5, 3, 2, 1], resultado.Select(x => x.Id));
+        }
+
+        [Fact]
         public async Task ConsultarAndamentoAsync_ComOrdemExistente_DeveRetornarStatus()
         {
             var ordem = new OrdemServico(1, 2) { Id = 15 };

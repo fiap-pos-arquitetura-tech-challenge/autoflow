@@ -267,7 +267,7 @@ O documento OpenAPI cru pode ser obtido em `{url-base}/openapi/v1.json`.
 | POST   | `/api/estoques/{id}/saida`   | `Colaborador`           | Registra saída de quantidade do estoque      |
 | PUT    | `/api/estoques/{id}/ajustar` | `Colaborador`           | Ajusta a quantidade do estoque diretamente   |
 | POST   | `/api/ordens-servico` | `Colaborador` | Cria uma ordem de serviço |
-| GET    | `/api/ordens-servico` | `Colaborador` | Lista ordens de serviço |
+| GET    | `/api/ordens-servico` | `Colaborador` | Lista ordens de serviço ativas (exclui Finalizada/Entregue), ordenadas por prioridade de status (EmExecucao > AguardandoAprovacao > EmDiagnostico > Recebida) e mais antigas primeiro |
 | GET    | `/api/ordens-servico/{id}` | `Colaborador` | Obtém os detalhes completos da OS |
 | PUT    | `/api/ordens-servico/{id}/avarias` | `Colaborador` | Registra/atualiza avarias observadas |
 | POST   | `/api/ordens-servico/{id}/diagnostico/iniciar` | `Colaborador` | Inicia o diagnóstico |
@@ -300,6 +300,11 @@ O colaborador prepara diagnóstico, serviços, peças e orçamento. A aprovaçã
 é feita pelo cliente autenticado e somente para uma OS vinculada ao seu `ClienteId` no token JWT. Na aprovação,
 as peças utilizadas são baixadas do estoque. A OS só pode ser finalizada quando todos os seus serviços estiverem
 com a execução concluída.
+
+A listagem (`GET /api/ordens-servico`) é uma visão operacional, não um `SELECT *`: OS `Finalizada` ou
+`Entregue` saem da lista (mas continuam acessíveis individualmente por `GET /api/ordens-servico/{id}`), e as
+demais aparecem ordenadas pela urgência do status (`EmExecucao` > `AguardandoAprovacao` > `EmDiagnostico` >
+`Recebida`), mais antigas primeiro dentro de cada grupo.
 
 ## Executando os testes
 

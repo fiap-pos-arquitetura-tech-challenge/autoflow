@@ -263,6 +263,36 @@ public class OrdemServicoEndpointsTests(AutoFlowApplicationFactory factory) : IC
     }
 
     [Fact]
+    public async Task GetOrdens_DeveOrdenarPorPrioridadeDeStatusEMaisAntigaPrimeiro()
+    {
+        var ordemRecebida = await CriarOrdemAsync();
+
+        var ordemDiagnostico = await CriarOrdemAsync();
+        await AutenticarColaboradorAsync();
+        var iniciarDiagnostico = await _client.PostAsync(
+            $"/api/ordens-servico/{ordemDiagnostico.Id}/diagnostico/iniciar",
+            null);
+        iniciarDiagnostico.EnsureSuccessStatusCode();
+
+        var ordemAguardandoAprovacao = await PrepararOrdemAguardandoAprovacaoAsync();
+
+        await AutenticarColaboradorAsync();
+        var listagemResponse = await _client.GetAsync("/api/ordens-servico");
+        listagemResponse.EnsureSuccessStatusCode();
+
+        var listagem = (await listagemResponse.Content.ReadFromJsonAsync<List<OrdemServicoDto>>())!;
+        var ids = listagem.Select(x => x.Id).ToList();
+
+        var indiceAguardando = ids.IndexOf(ordemAguardandoAprovacao.Id);
+        var indiceDiagnostico = ids.IndexOf(ordemDiagnostico.Id);
+        var indiceRecebida = ids.IndexOf(ordemRecebida.Id);
+
+        Assert.True(indiceAguardando >= 0 && indiceDiagnostico >= 0 && indiceRecebida >= 0);
+        Assert.True(indiceAguardando < indiceDiagnostico);
+        Assert.True(indiceDiagnostico < indiceRecebida);
+    }
+
+    [Fact]
     public async Task GetAndamento_SemToken_DeveRetornar401()
     {
         var ordem = await CriarOrdemAsync();
@@ -632,6 +662,14 @@ public class OrdemServicoEndpointsTests(AutoFlowApplicationFactory factory) : IC
         Assert.NotNull(andamento.ExecucaoIniciadaEm);
         Assert.NotNull(andamento.FinalizadaEm);
         Assert.NotNull(andamento.EntregueEm);
+
+        await AutenticarColaboradorAsync();
+
+        var listagemResponse = await _client.GetAsync("/api/ordens-servico");
+        listagemResponse.EnsureSuccessStatusCode();
+
+        var listagem = (await listagemResponse.Content.ReadFromJsonAsync<List<OrdemServicoDto>>())!;
+        Assert.DoesNotContain(listagem, x => x.Id == ordemEntregue.Id);
     }
 
 }

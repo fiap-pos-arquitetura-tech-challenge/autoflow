@@ -3,6 +3,7 @@ using AutoFlow.Application.Interfaces.Repositories;
 using AutoFlow.Application.Interfaces.Services;
 using AutoFlow.Application.Services.Enums;
 using AutoFlow.Application.Validators;
+using AutoFlow.Domain.Enums;
 using AutoFlow.Domain.Exceptions;
 using AutoFlow.Domain.Models;
 
@@ -302,8 +303,22 @@ namespace AutoFlow.Application.Services
         public async Task<IEnumerable<OrdemServicoDto>> ObterTodosAsync()
         {
             var ordens = await _ordemServicoRepositorio.ObterTodasCompletasAsync();
-            return ordens.Select(MapearParaDto);
+
+            return ordens
+                .Where(x => x.Status is not (StatusOrdemServico.Finalizada or StatusOrdemServico.Entregue))
+                .OrderBy(x => PrioridadeListagem(x.Status))
+                .ThenBy(x => x.DataAbertura)
+                .Select(MapearParaDto);
         }
+
+        private static int PrioridadeListagem(StatusOrdemServico status) => status switch
+        {
+            StatusOrdemServico.EmExecucao => 1,
+            StatusOrdemServico.AguardandoAprovacao => 2,
+            StatusOrdemServico.EmDiagnostico => 3,
+            StatusOrdemServico.Recebida => 4,
+            _ => int.MaxValue
+        };
 
         public async Task<Result<OrcamentoClienteDto>> ConsultarOrcamentoClienteAsync(int id, int clienteId)
         {
