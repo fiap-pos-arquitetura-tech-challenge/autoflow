@@ -102,6 +102,22 @@ test` (inclusive em CI), enquanto a aplicação em execução real continua usan
 SQL Server — a troca de provider é possível justamente porque a Infrastructure
 está isolada atrás de interfaces da Application.
 
+### Por que API key em vez de JWT na notificação externa de orçamento
+
+Os endpoints `.../orcamento/notificacao-externa/aprovar` e `.../reprovar`
+existem para um **sistema externo** (ex.: central de atendimento, bot de
+WhatsApp, gateway de e-mail/SMS) relatar a decisão do cliente sobre o
+orçamento, como alternativa ao cliente aprovar/reprovar logado no próprio
+app (`.../orcamento/aprovar`/`.../reprovar`, que seguem exigindo JWT com
+perfil `Cliente`). Um sistema externo não tem sessão do cliente nem a claim
+`clienteId` do token, então a autenticação é feita por uma chave compartilhada
+no header `X-Api-Key`, validada por um
+[ApiKeyEndpointFilter](src/backend/src/AutoFlow.Api/Security/ApiKeyEndpointFilter.cs)
+contra `Integracoes:ApiKey` — sem envolver `AddAuthentication`/`AddAuthorization`,
+já que não existe "usuário" nesse fluxo, só um sistema confiável pela posse da
+chave. Por isso essas rotas não checam `ClienteId`: a posse da API key já
+autoriza reportar a decisão de qualquer OS.
+
 ## Pré-requisitos
 
 - [.NET SDK 10.0](https://dotnet.microsoft.com/download)
@@ -119,6 +135,11 @@ Ao subir pela primeira vez (ambiente de desenvolvimento), a API aplica as
 migrations pendentes automaticamente e, se não houver nenhum colaborador
 cadastrado, faz o *seed* de um colaborador inicial a partir de
 `Bootstrap:Colaborador:Nome/Email/Senha`.
+
+Os endpoints de notificação externa de orçamento (`.../notificacao-externa/aprovar`
+e `.../reprovar`) exigem o header `X-Api-Key` com o valor configurado em
+`Integracoes:ApiKey`. Sem essa chave configurada, essas duas rotas sempre
+retornam `401` (as demais rotas da API não são afetadas).
 
 ### Opção 1 — Docker Compose
 
@@ -259,6 +280,8 @@ O documento OpenAPI cru pode ser obtido em `{url-base}/openapi/v1.json`.
 | GET    | `/api/ordens-servico/{id}/orcamento` | `Cliente` (dono da OS) | Consulta itens e valores do orçamento |
 | POST   | `/api/ordens-servico/{id}/orcamento/aprovar` | `Cliente` (dono da OS) | Aprova o orçamento e inicia a execução |
 | POST   | `/api/ordens-servico/{id}/orcamento/reprovar` | `Cliente` (dono da OS) | Reprova o orçamento com justificativa |
+| POST   | `/api/ordens-servico/{id}/orcamento/notificacao-externa/aprovar` | API key (`X-Api-Key`) | Aprova o orçamento via notificação de um sistema externo |
+| POST   | `/api/ordens-servico/{id}/orcamento/notificacao-externa/reprovar` | API key (`X-Api-Key`) | Reprova o orçamento via notificação de um sistema externo |
 | POST   | `/api/ordens-servico/{id}/servicos/{itemServicoId}/execucao/iniciar` | `Colaborador` | Inicia a execução de um serviço |
 | POST   | `/api/ordens-servico/{id}/servicos/{itemServicoId}/execucao/finalizar` | `Colaborador` | Finaliza a execução de um serviço |
 | POST   | `/api/ordens-servico/{id}/finalizar` | `Colaborador` | Finaliza a OS após concluir todos os serviços |

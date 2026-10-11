@@ -21,6 +21,7 @@ public class AutoFlowApplicationFactory : WebApplicationFactory<Program>
     public const int OutroClienteId = 2;
     public const string OutroClienteEmail = "outro.cliente@autoflow.com";
     public const string OutroClienteSenha = "OutroCliente@123";
+    public const string ApiKeyIntegracoes = "TestingOnlyApiKeyIntegracoesExternas";
 
     private SqliteConnection? _connection;
 
@@ -32,6 +33,7 @@ public class AutoFlowApplicationFactory : WebApplicationFactory<Program>
         Environment.SetEnvironmentVariable("Jwt__Secret", "TestingOnlySecretKey_MustBeAtLeast32BytesLong!");
         Environment.SetEnvironmentVariable("Jwt__Issuer", "AutoFlow.Api.Testing");
         Environment.SetEnvironmentVariable("Jwt__Audience", "AutoFlow.Client.Testing");
+        Environment.SetEnvironmentVariable("Integracoes__ApiKey", ApiKeyIntegracoes);
 
         builder.UseEnvironment("Testing");
 

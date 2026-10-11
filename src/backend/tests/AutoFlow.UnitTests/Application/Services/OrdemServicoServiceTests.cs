@@ -302,6 +302,36 @@ namespace AutoFlow.UnitTests.Application.Services
             Assert.Equal(4, estoque.Quantidade.Valor);
         }
 
+        [Fact]
+        public async Task AprovarOrcamentoNotificacaoExternaAsync_ComEstoqueDisponivel_DeveIniciarExecucaoSemClienteId()
+        {
+            var ordem = CriarOrdemAguardandoAprovacao();
+            var peca = new PecaInsumo("Filtro", 50m) { Id = 2 };
+            var estoque = new Estoque(peca, 5);
+
+            _ordemServicoRepositorioMock.Setup(r => r.ObterCompletaPorIdAsync(1)).ReturnsAsync(ordem);
+            _estoqueRepositorioMock.Setup(r => r.ObterPorPecaInsumoAsync(2)).ReturnsAsync(estoque);
+
+            var resultado = await _service.AprovarOrcamentoNotificacaoExternaAsync(1);
+
+            Assert.True(resultado.IsSuccess);
+            Assert.Equal(StatusOrdemServico.EmExecucao, resultado.Value!.Status);
+            Assert.Equal(StatusOrcamento.Aprovado, resultado.Value.Orcamento!.Status);
+            Assert.Equal(4, estoque.Quantidade.Valor);
+        }
+
+        [Fact]
+        public async Task AprovarOrcamentoNotificacaoExternaAsync_ComOrdemInexistente_DeveRetornarNotFound()
+        {
+            _ordemServicoRepositorioMock
+                .Setup(r => r.ObterCompletaPorIdAsync(99))
+                .ReturnsAsync((OrdemServico?)null);
+
+            var resultado = await _service.AprovarOrcamentoNotificacaoExternaAsync(99);
+
+            Assert.False(resultado.IsSuccess);
+            Assert.Equal(ErrorType.NotFound, resultado.ErrorType);
+        }
 
         [Fact]
         public async Task AdicionarPecaAsync_ComMesmaPecaJaAdicionada_DeveValidarQuantidadeTotalDaOs()
@@ -411,6 +441,50 @@ namespace AutoFlow.UnitTests.Application.Services
             _ordemServicoRepositorioMock.Verify(
                 r => r.AtualizarAsync(It.IsAny<OrdemServico>()),
                 Times.Never);
+        }
+
+        [Fact]
+        public async Task ReprovarOrcamentoNotificacaoExternaAsync_ComJustificativa_DeveVoltarParaDiagnosticoSemClienteId()
+        {
+            var ordem = CriarOrdemAguardandoAprovacao();
+            _ordemServicoRepositorioMock.Setup(r => r.ObterCompletaPorIdAsync(1)).ReturnsAsync(ordem);
+
+            var resultado = await _service.ReprovarOrcamentoNotificacaoExternaAsync(
+                1,
+                new ReprovaOrcamentoOrdemServicoDto("Valor acima do esperado."));
+
+            Assert.True(resultado.IsSuccess);
+            Assert.Equal(StatusOrdemServico.EmDiagnostico, resultado.Value!.Status);
+            Assert.Equal(StatusOrcamento.Reprovado, resultado.Value.Orcamento!.Status);
+        }
+
+        [Fact]
+        public async Task ReprovarOrcamentoNotificacaoExternaAsync_SemJustificativa_DeveRetornarValidation()
+        {
+            var resultado = await _service.ReprovarOrcamentoNotificacaoExternaAsync(
+                1,
+                new ReprovaOrcamentoOrdemServicoDto(""));
+
+            Assert.False(resultado.IsSuccess);
+            Assert.Equal(ErrorType.Validation, resultado.ErrorType);
+            _ordemServicoRepositorioMock.Verify(
+                r => r.ObterCompletaPorIdAsync(It.IsAny<int>()),
+                Times.Never);
+        }
+
+        [Fact]
+        public async Task ReprovarOrcamentoNotificacaoExternaAsync_ComOrdemInexistente_DeveRetornarNotFound()
+        {
+            _ordemServicoRepositorioMock
+                .Setup(r => r.ObterCompletaPorIdAsync(99))
+                .ReturnsAsync((OrdemServico?)null);
+
+            var resultado = await _service.ReprovarOrcamentoNotificacaoExternaAsync(
+                99,
+                new ReprovaOrcamentoOrdemServicoDto("Valor acima do esperado."));
+
+            Assert.False(resultado.IsSuccess);
+            Assert.Equal(ErrorType.NotFound, resultado.ErrorType);
         }
 
         [Fact]

@@ -162,6 +162,21 @@ namespace AutoFlow.Application.Services
             if (ordem is null || ordem.ClienteId != clienteId)
                 return OrdemNaoEncontrada();
 
+            return await AprovarOrcamentoNaOrdemAsync(ordem);
+        }
+
+        public async Task<Result<OrdemServicoDto>> AprovarOrcamentoNotificacaoExternaAsync(int id)
+        {
+            var ordem = await _ordemServicoRepositorio.ObterCompletaPorIdAsync(id);
+
+            if (ordem is null)
+                return OrdemNaoEncontrada();
+
+            return await AprovarOrcamentoNaOrdemAsync(ordem);
+        }
+
+        private async Task<Result<OrdemServicoDto>> AprovarOrcamentoNaOrdemAsync(OrdemServico ordem)
+        {
             var movimentacoesEstoque = new List<(Estoque Estoque, int Quantidade)>();
 
             var pecasAgrupadas = ordem.Pecas
@@ -231,9 +246,29 @@ namespace AutoFlow.Application.Services
             if (ordem is null || ordem.ClienteId != clienteId)
                 return OrdemNaoEncontrada();
 
+            return await ReprovarOrcamentoNaOrdemAsync(ordem, dto.Justificativa);
+        }
+
+        public async Task<Result<OrdemServicoDto>> ReprovarOrcamentoNotificacaoExternaAsync(int id, ReprovaOrcamentoOrdemServicoDto dto)
+        {
+            var validador = OrdemServicoValidador.Validar(dto);
+
+            if (validador is not null)
+                return Falha<OrdemServicoDto>(validador);
+
+            var ordem = await _ordemServicoRepositorio.ObterCompletaPorIdAsync(id);
+
+            if (ordem is null)
+                return OrdemNaoEncontrada();
+
+            return await ReprovarOrcamentoNaOrdemAsync(ordem, dto.Justificativa);
+        }
+
+        private async Task<Result<OrdemServicoDto>> ReprovarOrcamentoNaOrdemAsync(OrdemServico ordem, string justificativa)
+        {
             try
             {
-                ordem.ReprovarOrcamento(dto.Justificativa.Trim());
+                ordem.ReprovarOrcamento(justificativa.Trim());
                 await _ordemServicoRepositorio.AtualizarAsync(ordem);
 
                 return Result<OrdemServicoDto>.Success(MapearParaDto(ordem));

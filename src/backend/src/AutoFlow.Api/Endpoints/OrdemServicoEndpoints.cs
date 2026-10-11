@@ -1,4 +1,5 @@
 using AutoFlow.Api.Extensions;
+using AutoFlow.Api.Security;
 using AutoFlow.Application.DTOs;
 using AutoFlow.Application.Interfaces.Services;
 using AutoFlow.Domain.Enums;
@@ -114,6 +115,23 @@ namespace AutoFlow.Api.Endpoints
                 .Produces(StatusCodes.Status404NotFound)
                 .Produces(StatusCodes.Status409Conflict);
 
+            app.MapPost("/api/ordens-servico/{id:int}/orcamento/notificacao-externa/aprovar", AprovarOrcamentoNotificacaoExterna)
+                .AddEndpointFilter<ApiKeyEndpointFilter>()
+                .WithTags("Integrações")
+                .Produces<OrdemServicoDto>(StatusCodes.Status200OK)
+                .Produces(StatusCodes.Status401Unauthorized)
+                .Produces(StatusCodes.Status404NotFound)
+                .Produces(StatusCodes.Status409Conflict);
+
+            app.MapPost("/api/ordens-servico/{id:int}/orcamento/notificacao-externa/reprovar", ReprovarOrcamentoNotificacaoExterna)
+                .AddEndpointFilter<ApiKeyEndpointFilter>()
+                .WithTags("Integrações")
+                .Produces<OrdemServicoDto>(StatusCodes.Status200OK)
+                .Produces(StatusCodes.Status400BadRequest)
+                .Produces(StatusCodes.Status401Unauthorized)
+                .Produces(StatusCodes.Status404NotFound)
+                .Produces(StatusCodes.Status409Conflict);
+
             app.MapGet("/api/ordens-servico/{id:int}/andamento", ConsultarAndamento)
                 .RequireAuthorization(policy => policy.RequireRole(nameof(Perfil.Colaborador), nameof(Perfil.Cliente)))
                 .WithTags("Ordens de Serviço")
@@ -221,6 +239,18 @@ namespace AutoFlow.Api.Endpoints
                 return Results.Unauthorized();
 
             var result = await ordemServicoService.ReprovarOrcamentoAsync(id, clienteId, ordemServicoDto);
+            return result.ToHttpResult();
+        }
+
+        private static async Task<IResult> AprovarOrcamentoNotificacaoExterna(int id, IOrdemServicoService ordemServicoService)
+        {
+            var result = await ordemServicoService.AprovarOrcamentoNotificacaoExternaAsync(id);
+            return result.ToHttpResult();
+        }
+
+        private static async Task<IResult> ReprovarOrcamentoNotificacaoExterna(int id, ReprovaOrcamentoOrdemServicoDto ordemServicoDto, IOrdemServicoService ordemServicoService)
+        {
+            var result = await ordemServicoService.ReprovarOrcamentoNotificacaoExternaAsync(id, ordemServicoDto);
             return result.ToHttpResult();
         }
 

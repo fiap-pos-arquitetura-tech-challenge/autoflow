@@ -403,6 +403,85 @@ public class OrdemServicoEndpointsTests(AutoFlowApplicationFactory factory) : IC
     }
 
     [Fact]
+    public async Task PostNotificacaoExternaAprovar_ComApiKeyValida_DeveRetornar200EBaixarEstoque()
+    {
+        var ordem = await PrepararOrdemAguardandoAprovacaoAsync();
+
+        var clienteExterno = factory.CreateClient();
+        clienteExterno.DefaultRequestHeaders.Add("X-Api-Key", AutoFlowApplicationFactory.ApiKeyIntegracoes);
+
+        var response = await clienteExterno.PostAsync(
+            $"/api/ordens-servico/{ordem.Id}/orcamento/notificacao-externa/aprovar",
+            null);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var resultado = (await response.Content.ReadFromJsonAsync<OrdemServicoDto>())!;
+        Assert.Equal(StatusOrdemServico.EmExecucao, resultado.Status);
+        Assert.Equal(StatusOrcamento.Aprovado, resultado.Orcamento!.Status);
+    }
+
+    [Fact]
+    public async Task PostNotificacaoExternaAprovar_SemApiKey_DeveRetornar401()
+    {
+        var ordem = await PrepararOrdemAguardandoAprovacaoAsync();
+        var clienteAnonimo = factory.CreateClient();
+
+        var response = await clienteAnonimo.PostAsync(
+            $"/api/ordens-servico/{ordem.Id}/orcamento/notificacao-externa/aprovar",
+            null);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task PostNotificacaoExternaAprovar_ComApiKeyInvalida_DeveRetornar401()
+    {
+        var ordem = await PrepararOrdemAguardandoAprovacaoAsync();
+
+        var clienteExterno = factory.CreateClient();
+        clienteExterno.DefaultRequestHeaders.Add("X-Api-Key", "chave-errada");
+
+        var response = await clienteExterno.PostAsync(
+            $"/api/ordens-servico/{ordem.Id}/orcamento/notificacao-externa/aprovar",
+            null);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task PostNotificacaoExternaReprovar_ComApiKeyValidaEJustificativa_DeveRetornar200EVoltarParaDiagnostico()
+    {
+        var ordem = await PrepararOrdemAguardandoAprovacaoAsync();
+
+        var clienteExterno = factory.CreateClient();
+        clienteExterno.DefaultRequestHeaders.Add("X-Api-Key", AutoFlowApplicationFactory.ApiKeyIntegracoes);
+
+        var response = await clienteExterno.PostAsJsonAsync(
+            $"/api/ordens-servico/{ordem.Id}/orcamento/notificacao-externa/reprovar",
+            new ReprovaOrcamentoOrdemServicoDto("Valor acima do esperado."));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var resultado = (await response.Content.ReadFromJsonAsync<OrdemServicoDto>())!;
+        Assert.Equal(StatusOrdemServico.EmDiagnostico, resultado.Status);
+        Assert.Equal(StatusOrcamento.Reprovado, resultado.Orcamento!.Status);
+    }
+
+    [Fact]
+    public async Task PostNotificacaoExternaReprovar_SemJustificativa_DeveRetornar400()
+    {
+        var ordem = await PrepararOrdemAguardandoAprovacaoAsync();
+
+        var clienteExterno = factory.CreateClient();
+        clienteExterno.DefaultRequestHeaders.Add("X-Api-Key", AutoFlowApplicationFactory.ApiKeyIntegracoes);
+
+        var response = await clienteExterno.PostAsJsonAsync(
+            $"/api/ordens-servico/{ordem.Id}/orcamento/notificacao-externa/reprovar",
+            new ReprovaOrcamentoOrdemServicoDto(""));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
     public async Task Finalizar_ComServicoPendente_DeveRetornar409()
     {
         var ordem = await PrepararOrdemAguardandoAprovacaoAsync();
