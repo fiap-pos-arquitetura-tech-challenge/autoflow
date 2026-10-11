@@ -38,18 +38,42 @@ namespace AutoFlow.Application.Services
             if (veiculo.ClienteId != dto.ClienteId)
                 return Result<OrdemServicoDto>.Failure("O veículo informado não pertence ao cliente.", ErrorType.Validation);
 
+            OrdemServico ordemServico;
+
             try
             {
-                var ordemServico = new OrdemServico(dto.ClienteId, dto.VeiculoId, dto.AvariasObservadas);
-
-                await _ordemServicoRepositorio.AdicionarAsync(ordemServico);
-
-                return Result<OrdemServicoDto>.Success(MapearParaDto(ordemServico));
+                ordemServico = new OrdemServico(dto.ClienteId, dto.VeiculoId, dto.AvariasObservadas);
             }
             catch (OrdemServicoInvalidaException ex)
             {
                 return Result<OrdemServicoDto>.Failure(ex.Message, ErrorType.Validation);
             }
+
+            if (dto.Servicos is not null)
+            {
+                foreach (var servicoDto in dto.Servicos)
+                {
+                    var falhaServico = await TentarAdicionarServicoAsync(ordemServico, servicoDto);
+
+                    if (falhaServico is not null)
+                        return falhaServico;
+                }
+            }
+
+            if (dto.Pecas is not null)
+            {
+                foreach (var pecaDto in dto.Pecas)
+                {
+                    var falhaPeca = await TentarAdicionarPecaAsync(ordemServico, pecaDto);
+
+                    if (falhaPeca is not null)
+                        return falhaPeca;
+                }
+            }
+
+            await _ordemServicoRepositorio.AdicionarAsync(ordemServico);
+
+            return Result<OrdemServicoDto>.Success(MapearParaDto(ordemServico));
         }
 
         public async Task<Result<OrdemServicoDto>> RegistrarAvariasAsync(int id, RegistraAvariasOrdemServicoDto dto)
@@ -84,23 +108,14 @@ namespace AutoFlow.Application.Services
             if (ordem is null)
                 return OrdemNaoEncontrada();
 
-            var servico = await _servicoRepositorio.ObterPorIdAsync(dto.ServicoId);
+            var falha = await TentarAdicionarServicoAsync(ordem, dto);
 
-            if (servico is null)
-                return Result<OrdemServicoDto>.Failure("Serviço não encontrado.", ErrorType.NotFound);
+            if (falha is not null)
+                return falha;
 
-            try
-            {
-                ordem.AdicionarServico(servico.Id, servico.Nome, dto.Quantidade, servico.Preco, servico.TempoMedio);
+            await _ordemServicoRepositorio.AtualizarAsync(ordem);
 
-                await _ordemServicoRepositorio.AtualizarAsync(ordem);
-
-                return Result<OrdemServicoDto>.Success(MapearParaDto(ordem));
-            }
-            catch (OrdemServicoInvalidaException ex)
-            {
-                return Result<OrdemServicoDto>.Failure(ex.Message, ErrorType.Conflict);
-            }
+            return Result<OrdemServicoDto>.Success(MapearParaDto(ordem));
         }
 
         public async Task<Result<OrdemServicoDto>> RemoverServicoAsync(int id, int servicoId)
@@ -120,39 +135,14 @@ namespace AutoFlow.Application.Services
             if (ordem is null)
                 return OrdemNaoEncontrada();
 
-            var peca = await _pecaInsumoRepositorio.ObterPorIdAsync(dto.PecaId);
+            var falha = await TentarAdicionarPecaAsync(ordem, dto);
 
-            if (peca is null)
-                return Result<OrdemServicoDto>.Failure("Peça/insumo não encontrada.", ErrorType.NotFound);
+            if (falha is not null)
+                return falha;
 
-            var estoque = await _estoqueRepositorio.ObterPorPecaInsumoAsync(dto.PecaId);
+            await _ordemServicoRepositorio.AtualizarAsync(ordem);
 
-            if (estoque is null)
-                return Result<OrdemServicoDto>.Failure("Estoque da peça/insumo não encontrado.", ErrorType.NotFound);
-
-            var quantidadeJaAdicionada = ordem.Pecas
-                .Where(x => x.PecaId == dto.PecaId)
-                .Sum(x => x.Quantidade);
-
-            var quantidadeTotalNecessaria = quantidadeJaAdicionada + dto.Quantidade;
-
-            if (estoque.Quantidade.Valor < quantidadeTotalNecessaria)
-                return Result<OrdemServicoDto>.Failure(
-                    $"Estoque insuficiente. Disponível: {estoque.Quantidade.Valor}. Solicitado no total da OS: {quantidadeTotalNecessaria}.",
-                    ErrorType.Validation);
-
-            try
-            {
-                ordem.AdicionarPeca(peca.Id, peca.Nome, dto.Quantidade, peca.Valor.Valor);
-
-                await _ordemServicoRepositorio.AtualizarAsync(ordem);
-
-                return Result<OrdemServicoDto>.Success(MapearParaDto(ordem));
-            }
-            catch (OrdemServicoInvalidaException ex)
-            {
-                return Result<OrdemServicoDto>.Failure(ex.Message, ErrorType.Conflict);
-            }
+            return Result<OrdemServicoDto>.Success(MapearParaDto(ordem));
         }
 
         public async Task<Result<OrdemServicoDto>> RemoverPecaAsync(int id, int pecaId)
@@ -320,6 +310,58 @@ namespace AutoFlow.Application.Services
 
             return Result<AndamentoOrdemServicoDto>.Success(new AndamentoOrdemServicoDto(ordem.Id, ordem.Status, ordem.DataAbertura, ordem.DiagnosticoIniciadoEm, ordem.OrcamentoGeradoEm,
                 ordem.OrcamentoDecididoEm, ordem.ExecucaoIniciadaEm, ordem.FinalizadaEm, ordem.EntregueEm));
+        }
+
+        private async Task<Result<OrdemServicoDto>?> TentarAdicionarServicoAsync(OrdemServico ordem, AdicionaServicoOrdemServicoDto dto)
+        {
+            var servico = await _servicoRepositorio.ObterPorIdAsync(dto.ServicoId);
+
+            if (servico is null)
+                return Result<OrdemServicoDto>.Failure("Serviço não encontrado.", ErrorType.NotFound);
+
+            try
+            {
+                ordem.AdicionarServico(servico.Id, servico.Nome, dto.Quantidade, servico.Preco, servico.TempoMedio);
+                return null;
+            }
+            catch (OrdemServicoInvalidaException ex)
+            {
+                return Result<OrdemServicoDto>.Failure(ex.Message, ErrorType.Conflict);
+            }
+        }
+
+        private async Task<Result<OrdemServicoDto>?> TentarAdicionarPecaAsync(OrdemServico ordem, AdicionaPecaOrdemServicoDto dto)
+        {
+            var peca = await _pecaInsumoRepositorio.ObterPorIdAsync(dto.PecaId);
+
+            if (peca is null)
+                return Result<OrdemServicoDto>.Failure("Peça/insumo não encontrada.", ErrorType.NotFound);
+
+            var estoque = await _estoqueRepositorio.ObterPorPecaInsumoAsync(dto.PecaId);
+
+            if (estoque is null)
+                return Result<OrdemServicoDto>.Failure("Estoque da peça/insumo não encontrado.", ErrorType.NotFound);
+
+            var quantidadeJaAdicionada = ordem.Pecas
+                .Where(x => x.PecaId == dto.PecaId)
+                .Sum(x => x.Quantidade);
+
+            var quantidadeTotalNecessaria = quantidadeJaAdicionada + dto.Quantidade;
+
+            if (estoque.Quantidade.Valor < quantidadeTotalNecessaria)
+                return Result<OrdemServicoDto>.Failure(
+                    $"Estoque insuficiente. Disponível: {estoque.Quantidade.Valor}. Solicitado no total da OS: {quantidadeTotalNecessaria}.",
+                    ErrorType.Validation);
+
+            try
+            {
+                ordem.AdicionarPeca(peca.Id, peca.Nome, dto.Quantidade, peca.Valor.Valor);
+                return null;
+            }
+            catch (OrdemServicoInvalidaException ex)
+            {
+                return Result<OrdemServicoDto>.Failure(ex.Message, ErrorType.Conflict);
+            }
         }
 
         private async Task<Result<OrdemServicoDto>> AlterarOrdemAsync(int id, Action<OrdemServico> acao)

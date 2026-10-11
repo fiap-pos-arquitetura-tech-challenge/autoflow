@@ -103,6 +103,120 @@ public class OrdemServicoEndpointsTests(AutoFlowApplicationFactory factory) : IC
     }
 
     [Fact]
+    public async Task PostOrdemServico_ComServicoEPecaNaCriacao_DeveRetornar201ComItensSemBaixarEstoque()
+    {
+        await AutenticarColaboradorAsync();
+
+        var sequencia = Interlocked.Increment(ref _sequenciaVeiculo);
+        var letra = (char)('A' + ((sequencia - 1) % 26));
+        var placa = $"OC{letra}1A{sequencia % 100:00}";
+        var chassi = $"9BWZZZ377VT{sequencia:000000}";
+
+        var veiculoResponse = await _client.PostAsJsonAsync("/api/veiculos", new CriaVeiculoDto(
+            ClienteId: AutoFlowApplicationFactory.ClienteId,
+            Marca: "Toyota",
+            Modelo: "Corolla",
+            AnoFabricacao: 2020,
+            AnoModelo: 2021,
+            Cor: "Preto",
+            Tipo: TipoVeiculo.Carro,
+            Combustivel: Combustivel.Gasolina,
+            Placa: placa,
+            Chassi: chassi,
+            Quilometragem: 10000));
+        veiculoResponse.EnsureSuccessStatusCode();
+        var veiculo = (await veiculoResponse.Content.ReadFromJsonAsync<VeiculoDto>())!;
+
+        var servicoResponse = await _client.PostAsJsonAsync(
+            "/api/servicos",
+            new CriaServicoDto($"Troca de óleo na abertura {sequencia}", 200m, 60));
+        servicoResponse.EnsureSuccessStatusCode();
+        var servico = (await servicoResponse.Content.ReadFromJsonAsync<ServicoDto>())!;
+
+        var pecaResponse = await _client.PostAsJsonAsync(
+            "/api/pecasInsumos",
+            new CriaPecaInsumoDto($"Filtro na abertura {sequencia}", 50m));
+        pecaResponse.EnsureSuccessStatusCode();
+        var peca = (await pecaResponse.Content.ReadFromJsonAsync<PecaInsumoDto>())!;
+
+        var estoqueResponse = await _client.GetAsync($"/api/estoques/peca/{peca.Id}");
+        estoqueResponse.EnsureSuccessStatusCode();
+        var estoque = (await estoqueResponse.Content.ReadFromJsonAsync<EstoqueDto>())!;
+
+        var entradaEstoque = await _client.PostAsJsonAsync(
+            $"/api/estoques/{estoque.Id}/entrada",
+            new MovimentaEstoqueDto(10));
+        entradaEstoque.EnsureSuccessStatusCode();
+
+        var ordemResponse = await _client.PostAsJsonAsync(
+            "/api/ordens-servico",
+            new CriaOrdemServicoDto(
+                AutoFlowApplicationFactory.ClienteId,
+                veiculo.Id,
+                "Risco no para-choque",
+                [new AdicionaServicoOrdemServicoDto(servico.Id, 1)],
+                [new AdicionaPecaOrdemServicoDto(peca.Id, 2)]));
+
+        Assert.Equal(HttpStatusCode.Created, ordemResponse.StatusCode);
+
+        var ordem = (await ordemResponse.Content.ReadFromJsonAsync<OrdemServicoDto>())!;
+        Assert.Equal(StatusOrdemServico.Recebida, ordem.Status);
+
+        var itemServico = Assert.Single(ordem.Servicos);
+        Assert.Equal(200m, itemServico.Subtotal);
+
+        var itemPeca = Assert.Single(ordem.Pecas);
+        Assert.Equal(100m, itemPeca.Subtotal);
+
+        var estoqueAposCriacaoResponse = await _client.GetAsync($"/api/estoques/peca/{peca.Id}");
+        estoqueAposCriacaoResponse.EnsureSuccessStatusCode();
+        var estoqueAposCriacao = (await estoqueAposCriacaoResponse.Content.ReadFromJsonAsync<EstoqueDto>())!;
+        Assert.Equal(10, estoqueAposCriacao.Quantidade);
+    }
+
+    [Fact]
+    public async Task PostOrdemServico_ComPecaSemEstoqueSuficienteNaCriacao_DeveRetornar400()
+    {
+        await AutenticarColaboradorAsync();
+
+        var sequencia = Interlocked.Increment(ref _sequenciaVeiculo);
+        var letra = (char)('A' + ((sequencia - 1) % 26));
+        var placa = $"OE{letra}1A{sequencia % 100:00}";
+        var chassi = $"9BWZZZ377VT{sequencia:000000}";
+
+        var veiculoResponse = await _client.PostAsJsonAsync("/api/veiculos", new CriaVeiculoDto(
+            ClienteId: AutoFlowApplicationFactory.ClienteId,
+            Marca: "Toyota",
+            Modelo: "Corolla",
+            AnoFabricacao: 2020,
+            AnoModelo: 2021,
+            Cor: "Preto",
+            Tipo: TipoVeiculo.Carro,
+            Combustivel: Combustivel.Gasolina,
+            Placa: placa,
+            Chassi: chassi,
+            Quilometragem: 10000));
+        veiculoResponse.EnsureSuccessStatusCode();
+        var veiculo = (await veiculoResponse.Content.ReadFromJsonAsync<VeiculoDto>())!;
+
+        var pecaResponse = await _client.PostAsJsonAsync(
+            "/api/pecasInsumos",
+            new CriaPecaInsumoDto($"Filtro sem estoque {sequencia}", 50m));
+        pecaResponse.EnsureSuccessStatusCode();
+        var peca = (await pecaResponse.Content.ReadFromJsonAsync<PecaInsumoDto>())!;
+
+        var ordemResponse = await _client.PostAsJsonAsync(
+            "/api/ordens-servico",
+            new CriaOrdemServicoDto(
+                AutoFlowApplicationFactory.ClienteId,
+                veiculo.Id,
+                null,
+                Pecas: [new AdicionaPecaOrdemServicoDto(peca.Id, 1)]));
+
+        Assert.Equal(HttpStatusCode.BadRequest, ordemResponse.StatusCode);
+    }
+
+    [Fact]
     public async Task GetAndamento_ComClienteDaOrdem_DeveRetornar200()
     {
         var ordem = await CriarOrdemAsync();

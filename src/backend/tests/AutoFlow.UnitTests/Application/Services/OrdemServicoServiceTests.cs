@@ -68,6 +68,126 @@ namespace AutoFlow.UnitTests.Application.Services
         }
 
         [Fact]
+        public async Task AdicionarAsync_ComServicosEPecasValidos_DeveCriarOrdemComItens()
+        {
+            var cliente = CriarCliente();
+            var veiculo = CriarVeiculo();
+            var servico = new Servico("Troca de óleo", 250m, 60) { Id = 5 };
+            var peca = new PecaInsumo("Filtro de óleo", 50m) { Id = 7 };
+            var estoque = new Estoque(peca, 10) { Id = 3 };
+
+            _clienteRepositorioMock.Setup(r => r.ObterPorIdAsync(1)).ReturnsAsync(cliente);
+            _veiculoRepositorioMock.Setup(r => r.ObterPorIdAsync(2)).ReturnsAsync(veiculo);
+            _servicoRepositorioMock.Setup(r => r.ObterPorIdAsync(5)).ReturnsAsync(servico);
+            _pecaInsumoRepositorioMock.Setup(r => r.ObterPorIdAsync(7)).ReturnsAsync(peca);
+            _estoqueRepositorioMock.Setup(r => r.ObterPorPecaInsumoAsync(7)).ReturnsAsync(estoque);
+
+            var resultado = await _service.AdicionarAsync(new CriaOrdemServicoDto(
+                1,
+                2,
+                "Risco no para-choque",
+                [new AdicionaServicoOrdemServicoDto(5, 2)],
+                [new AdicionaPecaOrdemServicoDto(7, 3)]));
+
+            Assert.True(resultado.IsSuccess);
+            Assert.Equal(StatusOrdemServico.Recebida, resultado.Value!.Status);
+
+            var itemServico = Assert.Single(resultado.Value.Servicos);
+            Assert.Equal(500m, itemServico.Subtotal);
+
+            var itemPeca = Assert.Single(resultado.Value.Pecas);
+            Assert.Equal(150m, itemPeca.Subtotal);
+
+            _ordemServicoRepositorioMock.Verify(
+                r => r.AdicionarAsync(It.IsAny<OrdemServico>()),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task AdicionarAsync_ComServicoInexistente_DeveRetornarNotFoundSemPersistir()
+        {
+            var cliente = CriarCliente();
+            var veiculo = CriarVeiculo();
+
+            _clienteRepositorioMock.Setup(r => r.ObterPorIdAsync(1)).ReturnsAsync(cliente);
+            _veiculoRepositorioMock.Setup(r => r.ObterPorIdAsync(2)).ReturnsAsync(veiculo);
+            _servicoRepositorioMock.Setup(r => r.ObterPorIdAsync(99)).ReturnsAsync((Servico?)null);
+
+            var resultado = await _service.AdicionarAsync(new CriaOrdemServicoDto(
+                1,
+                2,
+                null,
+                Servicos: [new AdicionaServicoOrdemServicoDto(99, 1)]));
+
+            Assert.False(resultado.IsSuccess);
+            Assert.Equal(ErrorType.NotFound, resultado.ErrorType);
+
+            _ordemServicoRepositorioMock.Verify(
+                r => r.AdicionarAsync(It.IsAny<OrdemServico>()),
+                Times.Never);
+        }
+
+        [Fact]
+        public async Task AdicionarAsync_ComPecaSemEstoqueSuficiente_DeveRetornarValidationSemPersistir()
+        {
+            var cliente = CriarCliente();
+            var veiculo = CriarVeiculo();
+            var peca = new PecaInsumo("Filtro de óleo", 50m) { Id = 7 };
+            var estoque = new Estoque(peca, 1) { Id = 3 };
+
+            _clienteRepositorioMock.Setup(r => r.ObterPorIdAsync(1)).ReturnsAsync(cliente);
+            _veiculoRepositorioMock.Setup(r => r.ObterPorIdAsync(2)).ReturnsAsync(veiculo);
+            _pecaInsumoRepositorioMock.Setup(r => r.ObterPorIdAsync(7)).ReturnsAsync(peca);
+            _estoqueRepositorioMock.Setup(r => r.ObterPorPecaInsumoAsync(7)).ReturnsAsync(estoque);
+
+            var resultado = await _service.AdicionarAsync(new CriaOrdemServicoDto(
+                1,
+                2,
+                null,
+                Pecas: [new AdicionaPecaOrdemServicoDto(7, 2)]));
+
+            Assert.False(resultado.IsSuccess);
+            Assert.Equal(ErrorType.Validation, resultado.ErrorType);
+            Assert.Contains("Estoque insuficiente", resultado.Error);
+
+            _ordemServicoRepositorioMock.Verify(
+                r => r.AdicionarAsync(It.IsAny<OrdemServico>()),
+                Times.Never);
+        }
+
+        [Fact]
+        public async Task AdicionarAsync_ComPecaRepetida_DeveSomarQuantidadeTotalAoValidarEstoque()
+        {
+            var cliente = CriarCliente();
+            var veiculo = CriarVeiculo();
+            var peca = new PecaInsumo("Filtro de óleo", 50m) { Id = 7 };
+            var estoque = new Estoque(peca, 5) { Id = 3 };
+
+            _clienteRepositorioMock.Setup(r => r.ObterPorIdAsync(1)).ReturnsAsync(cliente);
+            _veiculoRepositorioMock.Setup(r => r.ObterPorIdAsync(2)).ReturnsAsync(veiculo);
+            _pecaInsumoRepositorioMock.Setup(r => r.ObterPorIdAsync(7)).ReturnsAsync(peca);
+            _estoqueRepositorioMock.Setup(r => r.ObterPorPecaInsumoAsync(7)).ReturnsAsync(estoque);
+
+            var resultado = await _service.AdicionarAsync(new CriaOrdemServicoDto(
+                1,
+                2,
+                null,
+                Pecas:
+                [
+                    new AdicionaPecaOrdemServicoDto(7, 3),
+                    new AdicionaPecaOrdemServicoDto(7, 3)
+                ]));
+
+            Assert.False(resultado.IsSuccess);
+            Assert.Equal(ErrorType.Validation, resultado.ErrorType);
+            Assert.Contains("Solicitado no total da OS: 6", resultado.Error);
+
+            _ordemServicoRepositorioMock.Verify(
+                r => r.AdicionarAsync(It.IsAny<OrdemServico>()),
+                Times.Never);
+        }
+
+        [Fact]
         public async Task IniciarDiagnosticoAsync_ComOrdemExistente_DeveAtualizarStatus()
         {
             var ordem = new OrdemServico(1, 2) { Id = 10 };
