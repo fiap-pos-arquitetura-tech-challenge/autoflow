@@ -1,3 +1,5 @@
+using AutoFlow.Application.Interfaces.Services;
+using AutoFlow.Infrastructure.Email;
 using AutoFlow.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -13,6 +15,8 @@ public static class DependencyInjection
 
         services.AddDbContext<AppDbContext>(options =>
             options.UseSqlServer(connectionString));
+
+        services.AddScoped<IEmailService, SmtpEmailService>();
 
         return services;
     }

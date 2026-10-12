@@ -10,7 +10,7 @@ using AutoFlow.Domain.Models;
 namespace AutoFlow.Application.Services
 {
     public class OrdemServicoService(IOrdemServicoRepositorio ordemServicoRepositorio, IClienteRepositorio clienteRepositorio, IVeiculoRepositorio veiculoRepositorio,
-        IServicoRepositorio servicoRepositorio, IPecaInsumoRepositorio pecaInsumoRepositorio, IEstoqueRepositorio estoqueRepositorio) : IOrdemServicoService
+        IServicoRepositorio servicoRepositorio, IPecaInsumoRepositorio pecaInsumoRepositorio, IEstoqueRepositorio estoqueRepositorio, IEmailService emailService) : IOrdemServicoService
     {
         private readonly IOrdemServicoRepositorio _ordemServicoRepositorio = ordemServicoRepositorio;
         private readonly IClienteRepositorio _clienteRepositorio = clienteRepositorio;
@@ -18,6 +18,7 @@ namespace AutoFlow.Application.Services
         private readonly IServicoRepositorio _servicoRepositorio = servicoRepositorio;
         private readonly IPecaInsumoRepositorio _pecaInsumoRepositorio = pecaInsumoRepositorio;
         private readonly IEstoqueRepositorio _estoqueRepositorio = estoqueRepositorio;
+        private readonly IEmailService _emailService = emailService;
 
         public async Task<Result<OrdemServicoDto>> AdicionarAsync(CriaOrdemServicoDto dto)
         {
@@ -178,6 +179,7 @@ namespace AutoFlow.Application.Services
 
         private async Task<Result<OrdemServicoDto>> AprovarOrcamentoNaOrdemAsync(OrdemServico ordem)
         {
+            var statusAnterior = ordem.Status;
             var movimentacoesEstoque = new List<(Estoque Estoque, int Quantidade)>();
 
             var pecasAgrupadas = ordem.Pecas
@@ -212,6 +214,7 @@ namespace AutoFlow.Application.Services
                     movimentacao.Estoque.Saida(movimentacao.Quantidade);
 
                 await _ordemServicoRepositorio.AtualizarAsync(ordem);
+                await NotificarMudancaStatusAsync(ordem, statusAnterior);
 
                 return Result<OrdemServicoDto>.Success(MapearParaDto(ordem));
             }
@@ -267,10 +270,13 @@ namespace AutoFlow.Application.Services
 
         private async Task<Result<OrdemServicoDto>> ReprovarOrcamentoNaOrdemAsync(OrdemServico ordem, string justificativa)
         {
+            var statusAnterior = ordem.Status;
+
             try
             {
                 ordem.ReprovarOrcamento(justificativa.Trim());
                 await _ordemServicoRepositorio.AtualizarAsync(ordem);
+                await NotificarMudancaStatusAsync(ordem, statusAnterior);
 
                 return Result<OrdemServicoDto>.Success(MapearParaDto(ordem));
             }
@@ -421,16 +427,41 @@ namespace AutoFlow.Application.Services
             if (ordem is null)
                 return OrdemNaoEncontrada();
 
+            var statusAnterior = ordem.Status;
+
             try
             {
                 acao(ordem);
                 await _ordemServicoRepositorio.AtualizarAsync(ordem);
+                await NotificarMudancaStatusAsync(ordem, statusAnterior);
 
                 return Result<OrdemServicoDto>.Success(MapearParaDto(ordem));
             }
             catch (OrdemServicoInvalidaException ex)
             {
                 return Result<OrdemServicoDto>.Failure(ex.Message, ErrorType.Conflict);
+            }
+        }
+
+        private async Task NotificarMudancaStatusAsync(OrdemServico ordem, StatusOrdemServico statusAnterior)
+        {
+            if (ordem.Status == statusAnterior)
+                return;
+
+            var cliente = await _clienteRepositorio.ObterPorIdAsync(ordem.ClienteId);
+
+            if (cliente is null)
+                return;
+
+            try
+            {
+                await _emailService.EnviarAsync(
+                    cliente.Email.Endereco,
+                    $"Atualização da Ordem de Serviço #{ordem.Id}",
+                    $"Sua Ordem de Serviço #{ordem.Id} agora está com status: {ordem.Status}.");
+            }
+            catch (Exception)
+            {
             }
         }
 

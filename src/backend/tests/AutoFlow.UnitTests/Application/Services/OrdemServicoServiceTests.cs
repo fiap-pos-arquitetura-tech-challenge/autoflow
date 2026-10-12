@@ -1,5 +1,6 @@
 using AutoFlow.Application.DTOs;
 using AutoFlow.Application.Interfaces.Repositories;
+using AutoFlow.Application.Interfaces.Services;
 using AutoFlow.Application.Services;
 using AutoFlow.Application.Services.Enums;
 using AutoFlow.Domain.Enums;
@@ -17,12 +18,13 @@ namespace AutoFlow.UnitTests.Application.Services
         private readonly Mock<IServicoRepositorio> _servicoRepositorioMock = new();
         private readonly Mock<IPecaInsumoRepositorio> _pecaInsumoRepositorioMock = new();
         private readonly Mock<IEstoqueRepositorio> _estoqueRepositorioMock = new();
+        private readonly Mock<IEmailService> _emailServiceMock = new();
         private readonly OrdemServicoService _service;
 
         public OrdemServicoServiceTests()
         {
             _service = new OrdemServicoService(_ordemServicoRepositorioMock.Object, _clienteRepositorioMock.Object, _veiculoRepositorioMock.Object, _servicoRepositorioMock.Object,
-                _pecaInsumoRepositorioMock.Object, _estoqueRepositorioMock.Object);
+                _pecaInsumoRepositorioMock.Object, _estoqueRepositorioMock.Object, _emailServiceMock.Object);
         }
 
         [Fact]
@@ -201,6 +203,71 @@ namespace AutoFlow.UnitTests.Application.Services
         }
 
         [Fact]
+        public async Task IniciarDiagnosticoAsync_ComMudancaDeStatus_DeveNotificarClientePorEmail()
+        {
+            var cliente = CriarCliente();
+            var ordem = new OrdemServico(1, 2) { Id = 10 };
+
+            _ordemServicoRepositorioMock.Setup(r => r.ObterCompletaPorIdAsync(10)).ReturnsAsync(ordem);
+            _clienteRepositorioMock.Setup(r => r.ObterPorIdAsync(1)).ReturnsAsync(cliente);
+
+            await _service.IniciarDiagnosticoAsync(10);
+
+            _emailServiceMock.Verify(
+                e => e.EnviarAsync(cliente.Email.Endereco, It.IsAny<string>(), It.IsAny<string>()),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task RegistrarAvariasAsync_SemMudancaDeStatus_NaoDeveNotificarPorEmail()
+        {
+            var ordem = new OrdemServico(1, 2) { Id = 10 };
+            _ordemServicoRepositorioMock.Setup(r => r.ObterCompletaPorIdAsync(10)).ReturnsAsync(ordem);
+
+            var resultado = await _service.RegistrarAvariasAsync(10, new RegistraAvariasOrdemServicoDto("Novo risco"));
+
+            Assert.True(resultado.IsSuccess);
+            _emailServiceMock.Verify(
+                e => e.EnviarAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),
+                Times.Never);
+            _clienteRepositorioMock.Verify(r => r.ObterPorIdAsync(It.IsAny<int>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task IniciarDiagnosticoAsync_ComFalhaNoEnvioDeEmail_DeveManterSucessoDaOperacao()
+        {
+            var cliente = CriarCliente();
+            var ordem = new OrdemServico(1, 2) { Id = 10 };
+
+            _ordemServicoRepositorioMock.Setup(r => r.ObterCompletaPorIdAsync(10)).ReturnsAsync(ordem);
+            _clienteRepositorioMock.Setup(r => r.ObterPorIdAsync(1)).ReturnsAsync(cliente);
+            _emailServiceMock
+                .Setup(e => e.EnviarAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                .ThrowsAsync(new InvalidOperationException("SMTP indisponível."));
+
+            var resultado = await _service.IniciarDiagnosticoAsync(10);
+
+            Assert.True(resultado.IsSuccess);
+            Assert.Equal(StatusOrdemServico.EmDiagnostico, resultado.Value!.Status);
+        }
+
+        [Fact]
+        public async Task IniciarDiagnosticoAsync_ComClienteInexistente_NaoDeveNotificarENaoDeveFalhar()
+        {
+            var ordem = new OrdemServico(1, 2) { Id = 10 };
+
+            _ordemServicoRepositorioMock.Setup(r => r.ObterCompletaPorIdAsync(10)).ReturnsAsync(ordem);
+            _clienteRepositorioMock.Setup(r => r.ObterPorIdAsync(1)).ReturnsAsync((Cliente?)null);
+
+            var resultado = await _service.IniciarDiagnosticoAsync(10);
+
+            Assert.True(resultado.IsSuccess);
+            _emailServiceMock.Verify(
+                e => e.EnviarAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),
+                Times.Never);
+        }
+
+        [Fact]
         public async Task AdicionarServicoAsync_ComServicoExistente_DeveUsarSnapshotDoCatalogo()
         {
             var ordem = CriarOrdemEmDiagnostico();
@@ -318,6 +385,25 @@ namespace AutoFlow.UnitTests.Application.Services
             Assert.Equal(StatusOrdemServico.EmExecucao, resultado.Value!.Status);
             Assert.Equal(StatusOrcamento.Aprovado, resultado.Value.Orcamento!.Status);
             Assert.Equal(4, estoque.Quantidade.Valor);
+        }
+
+        [Fact]
+        public async Task AprovarOrcamentoNotificacaoExternaAsync_ComMudancaDeStatus_DeveNotificarClientePorEmail()
+        {
+            var cliente = CriarCliente();
+            var ordem = CriarOrdemAguardandoAprovacao();
+            var peca = new PecaInsumo("Filtro", 50m) { Id = 2 };
+            var estoque = new Estoque(peca, 5);
+
+            _ordemServicoRepositorioMock.Setup(r => r.ObterCompletaPorIdAsync(1)).ReturnsAsync(ordem);
+            _estoqueRepositorioMock.Setup(r => r.ObterPorPecaInsumoAsync(2)).ReturnsAsync(estoque);
+            _clienteRepositorioMock.Setup(r => r.ObterPorIdAsync(1)).ReturnsAsync(cliente);
+
+            await _service.AprovarOrcamentoNotificacaoExternaAsync(1);
+
+            _emailServiceMock.Verify(
+                e => e.EnviarAsync(cliente.Email.Endereco, It.IsAny<string>(), It.IsAny<string>()),
+                Times.Once);
         }
 
         [Fact]
@@ -456,6 +542,23 @@ namespace AutoFlow.UnitTests.Application.Services
             Assert.True(resultado.IsSuccess);
             Assert.Equal(StatusOrdemServico.EmDiagnostico, resultado.Value!.Status);
             Assert.Equal(StatusOrcamento.Reprovado, resultado.Value.Orcamento!.Status);
+        }
+
+        [Fact]
+        public async Task ReprovarOrcamentoNotificacaoExternaAsync_ComMudancaDeStatus_DeveNotificarClientePorEmail()
+        {
+            var cliente = CriarCliente();
+            var ordem = CriarOrdemAguardandoAprovacao();
+            _ordemServicoRepositorioMock.Setup(r => r.ObterCompletaPorIdAsync(1)).ReturnsAsync(ordem);
+            _clienteRepositorioMock.Setup(r => r.ObterPorIdAsync(1)).ReturnsAsync(cliente);
+
+            await _service.ReprovarOrcamentoNotificacaoExternaAsync(
+                1,
+                new ReprovaOrcamentoOrdemServicoDto("Valor acima do esperado."));
+
+            _emailServiceMock.Verify(
+                e => e.EnviarAsync(cliente.Email.Endereco, It.IsAny<string>(), It.IsAny<string>()),
+                Times.Once);
         }
 
         [Fact]

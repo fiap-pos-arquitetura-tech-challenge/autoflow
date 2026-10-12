@@ -10,6 +10,10 @@ services:
       - 'Bootstrap__Colaborador__Nome=${AUTOFLOW_BOOTSTRAP_NOME:-Administrador AutoFlow}'
       - 'Bootstrap__Colaborador__Email=${AUTOFLOW_BOOTSTRAP_EMAIL:-colaborador@autoflow.local}'
       - 'Bootstrap__Colaborador__Senha=${AUTOFLOW_BOOTSTRAP_SENHA:-DevOnly@123456}'
+      - 'Smtp__Host=mailcatcher'
+      - 'Smtp__Port=1025'
+      - 'Smtp__From=naoresponda@autoflow.local'
+      - 'Smtp__UseSsl=false'
     ports:
       - "8080:8080"
       - "8081:8081"
@@ -18,7 +22,16 @@ services:
       - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
       - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+    depends_on:
+      mailcatcher:
+        condition: service_started
 
   sqlserver:
     ports:
       - "1433:1433"
+
+  mailcatcher:
+    image: dockage/mailcatcher:0.9.0
+    ports:
+      - "1080:1080"
+      - "1025:1025"

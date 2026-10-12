@@ -141,6 +141,11 @@ e `.../reprovar`) exigem o header `X-Api-Key` com o valor configurado em
 `Integracoes:ApiKey`. Sem essa chave configurada, essas duas rotas sempre
 retornam `401` (as demais rotas da API não são afetadas).
 
+A cada troca de status de uma Ordem de Serviço, a API envia um e-mail ao
+cliente dono da OS via SMTP (`Smtp:Host/Port/From/UseSsl`, e opcionalmente
+`Smtp:User/Password` se o servidor exigir autenticação). O envio é
+*best-effort*: uma falha no SMTP não impede a troca de status.
+
 ### Opção 1 — Docker Compose
 
 Já vem configurado em [docker-compose.override.yml](src/backend/docker-compose.override.yml)
@@ -148,6 +153,11 @@ com um `Jwt__Secret` de desenvolvimento e um colaborador inicial padrão
 (`colaborador@autoflow.local` / `DevOnly@123456`), sobrescrevíveis pelas
 variáveis de ambiente `AUTOFLOW_BOOTSTRAP_NOME`, `AUTOFLOW_BOOTSTRAP_EMAIL` e
 `AUTOFLOW_BOOTSTRAP_SENHA`. Nenhuma ação extra é necessária.
+
+O Docker Compose também sobe um [MailCatcher](https://github.com/sj26/mailcatcher)
+(`mailcatcher`), que recebe todos os e-mails da API em desenvolvimento sem
+precisar de uma conta de e-mail real. A UI web para visualizar os e-mails
+enviados fica em `http://localhost:1080`.
 
 ### Opção 2 — Execução local com o .NET CLI
 

@@ -1,6 +1,8 @@
-﻿using AutoFlow.Domain.Enums;
+﻿using AutoFlow.Application.Interfaces.Services;
+using AutoFlow.Domain.Enums;
 using AutoFlow.Domain.Models;
 using AutoFlow.Infrastructure.Persistence;
+using AutoFlow.IntegrationTests.Helpers;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
@@ -51,6 +53,9 @@ public class AutoFlowApplicationFactory : WebApplicationFactory<Program>
             {
                 options.UseSqlite(_connection);
             });
+
+            services.RemoveAll<IEmailService>();
+            services.AddSingleton<IEmailService, FakeEmailService>();
 
             using var scope = services
                 .BuildServiceProvider()
