@@ -27,9 +27,19 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-    app.MapScalarApiReference();
+    app.MapScalarApiReference();    
+}
 
+var applyMigrations = app.Configuration.GetValue<bool>("Database:ApplyMigrations");
+
+if (app.Environment.IsDevelopment() || applyMigrations)
+{
     await app.Services.ApplyMigrationsAndSeedAsync();
+}
+
+if (applyMigrations)
+{
+    return;
 }
 
 app.UseExceptionHandler();
@@ -37,6 +47,8 @@ app.UseHttpsRedirection();
 
 app.UseSecurityConfiguration();
 
+
+app.MapGet("/", () => "Ok System is running");
 app.MapAuthEndpoints();
 app.MapClienteEndpoints();
 app.MapServicoEndpoints();

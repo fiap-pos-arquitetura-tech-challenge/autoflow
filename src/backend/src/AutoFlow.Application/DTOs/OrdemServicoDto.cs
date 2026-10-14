@@ -2,7 +2,12 @@ using AutoFlow.Domain.Enums;
 
 namespace AutoFlow.Application.DTOs
 {
-    public record CriaOrdemServicoDto(int ClienteId, int VeiculoId, string? AvariasObservadas);
+    public record CriaOrdemServicoDto(
+        int ClienteId,
+        int VeiculoId,
+        string? AvariasObservadas,
+        IEnumerable<AdicionaServicoOrdemServicoDto>? Servicos = null,
+        IEnumerable<AdicionaPecaOrdemServicoDto>? Pecas = null);
 
     public record RegistraAvariasOrdemServicoDto(string? AvariasObservadas);
 

@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: autoflow-config
+data:
+  ASPNETCORE_ENVIRONMENT: "Production"
+  Jwt__Issuer: "AutoFlow.Api"
+  Jwt__Audience: "AutoFlow.Client"
+  Jwt__ExpiresInMinutes: "60"
+  Bootstrap__Colaborador__Nome: "Administrador AutoFlow"

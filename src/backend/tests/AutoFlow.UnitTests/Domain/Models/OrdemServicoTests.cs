@@ -103,6 +103,19 @@ namespace AutoFlow.UnitTests.Domain.Models
         }
 
         [Fact]
+        public void AdicionarServico_Recebida_DeveAdicionarItemComSnapshot()
+        {
+            var ordemServico = new OrdemServico(1, 1);
+
+            ordemServico.AdicionarServico(1, "Troca de óleo", 2, 150m, 60);
+
+            var item = Assert.Single(ordemServico.Servicos);
+            Assert.Equal(StatusOrdemServico.Recebida, ordemServico.Status);
+            Assert.Equal(1, item.ServicoId);
+            Assert.Equal(300m, item.Subtotal);
+        }
+
+        [Fact]
         public void AdicionarPeca_EmDiagnostico_DeveAdicionarItemComSnapshot()
         {
             var ordemServico = CriarOrdemServicoEmDiagnostico();
@@ -114,6 +127,19 @@ namespace AutoFlow.UnitTests.Domain.Models
             Assert.Equal("Filtro de óleo", item.Descricao);
             Assert.Equal(2, item.Quantidade);
             Assert.Equal(50m, item.ValorUnitario);
+            Assert.Equal(100m, item.Subtotal);
+        }
+
+        [Fact]
+        public void AdicionarPeca_Recebida_DeveAdicionarItemComSnapshot()
+        {
+            var ordemServico = new OrdemServico(1, 1);
+
+            ordemServico.AdicionarPeca(1, "Filtro de óleo", 2, 50m);
+
+            var item = Assert.Single(ordemServico.Pecas);
+            Assert.Equal(StatusOrdemServico.Recebida, ordemServico.Status);
+            Assert.Equal(1, item.PecaId);
             Assert.Equal(100m, item.Subtotal);
         }
 
@@ -209,12 +235,21 @@ namespace AutoFlow.UnitTests.Domain.Models
         }
 
         [Fact]
-        public void AdicionarServico_ForaDoDiagnostico_DeveLancarOrdemServicoInvalidaException()
+        public void AdicionarServico_ForaDeRecebidaOuDiagnostico_DeveLancarOrdemServicoInvalidaException()
         {
-            var ordemServico = new OrdemServico(1, 1);
+            var ordemServico = CriarOrdemServicoAguardandoAprovacao();
 
             Assert.Throws<OrdemServicoInvalidaException>(() =>
-                ordemServico.AdicionarServico(1, "Troca de óleo", 1, 150m, 60));
+                ordemServico.AdicionarServico(2, "Alinhamento", 1, 80m, 30));
+        }
+
+        [Fact]
+        public void AdicionarPeca_ForaDeRecebidaOuDiagnostico_DeveLancarOrdemServicoInvalidaException()
+        {
+            var ordemServico = CriarOrdemServicoAguardandoAprovacao();
+
+            Assert.Throws<OrdemServicoInvalidaException>(() =>
+                ordemServico.AdicionarPeca(2, "Pastilha de freio", 1, 90m));
         }
 
         [Fact]

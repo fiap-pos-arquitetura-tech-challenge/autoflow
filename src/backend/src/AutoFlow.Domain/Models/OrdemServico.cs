@@ -66,14 +66,14 @@ namespace AutoFlow.Domain.Models
 
         public void AdicionarServico(int servicoId, string descricao, int quantidade, decimal valorUnitario, int tempoPrevisto)
         {
-            ValidarStatus(StatusOrdemServico.EmDiagnostico);
+            ValidarStatus(StatusOrdemServico.Recebida, StatusOrdemServico.EmDiagnostico);
 
             Servicos.Add(new OrdemServicoItemServico(servicoId, descricao, quantidade, valorUnitario, tempoPrevisto));
         }
 
         public void RemoverServico(int servicoId)
         {
-            ValidarStatus(StatusOrdemServico.EmDiagnostico);
+            ValidarStatus(StatusOrdemServico.Recebida, StatusOrdemServico.EmDiagnostico);
 
             var item = Servicos.FirstOrDefault(x => x.ServicoId == servicoId);
 
@@ -85,14 +85,14 @@ namespace AutoFlow.Domain.Models
 
         public void AdicionarPeca(int pecaId, string descricao, int quantidade, decimal valorUnitario)
         {
-            ValidarStatus(StatusOrdemServico.EmDiagnostico);
+            ValidarStatus(StatusOrdemServico.Recebida, StatusOrdemServico.EmDiagnostico);
 
             Pecas.Add(new OrdemServicoItemPeca(pecaId, descricao, quantidade, valorUnitario));
         }
 
         public void RemoverPeca(int pecaId)
         {
-            ValidarStatus(StatusOrdemServico.EmDiagnostico);
+            ValidarStatus(StatusOrdemServico.Recebida, StatusOrdemServico.EmDiagnostico);
 
             var item = Pecas.FirstOrDefault(x => x.PecaId == pecaId);
 

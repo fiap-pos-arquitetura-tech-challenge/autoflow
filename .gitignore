@@ -19,6 +19,15 @@ mono_crash.*
 
 .idea/
 
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+*.tfvars
+*.tfvars.json
+
 #SonarQube files
 .sonarqube/
 
