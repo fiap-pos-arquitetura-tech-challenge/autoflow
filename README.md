@@ -30,6 +30,9 @@ A infraestrutura foi validada por meio de testes de deploy automatizado, escalab
 ## Estrutura do projeto
 
 ```
+.github/                           # Pipeline de CI/CD
+infra/                             # scripts em Terraform para provisionamento do cluster Kubernetes
+k8s/                               # Manifestos kubernetes
 src/backend/
 ├── AutoFlow.slnx                  # Solução (.NET)
 ├── docker-compose.yml             # Orquestração dos containers (API + SQL Server)
@@ -186,14 +189,7 @@ dotnet user-secrets set "Bootstrap:Colaborador:Senha" "DevOnly@123456"
 
 O AutoFlow pode ser executado localmente utilizando **Docker Compose**, permitindo iniciar a API .NET 10 e o banco de dados SQL Server em containers, sem a necessidade de instalar esses serviços diretamente no computador.
 
-### Pré-requisitos
 
-Para executar o projeto, é necessário ter instalado:
-
-- [Git](https://git-scm.com/)
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/), com Docker Compose habilitado.
-
-> O SDK .NET 10 não é obrigatório para executar a aplicação via Docker Compose, pois a construção e a execução da API são realizadas dentro dos containers.
 
 ### 1. Clonar o repositório
 
@@ -916,6 +912,439 @@ kubectl top pods
 ```
 
 O processo de CI/CD foi validado por meio da implantação da API no Amazon EKS, execução das migrations no Amazon RDS, consumo dos endpoints e testes de escalabilidade automática.
+
+## Provisionamento da Infraestrutura com Terraform
+
+O AutoFlow utiliza **Terraform** para automatizar o provisionamento e gerenciamento da infraestrutura na **Amazon Web Services (AWS)**, seguindo o conceito de **Infrastructure as Code (IaC)**.
+
+Os arquivos de configuração estão disponíveis no diretório `/infra` e são responsáveis pela criação da rede, cluster Kubernetes, Worker Nodes e banco de dados.
+
+A infraestrutura é provisionada na região **`us-east-2` (Ohio)**.
+
+### 1. Pré-requisitos
+
+Para provisionar a infraestrutura, é necessário:
+
+- [Terraform](https://developer.hashicorp.com/terraform/install) instalado.
+- [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) instalada e configurada.
+- Conta AWS com permissões para gerenciar os recursos utilizados.
+- Bucket Amazon S3 previamente criado para armazenar o Terraform State.
+- Repositório Amazon ECR previamente criado para armazenar as imagens Docker.
+
+### 2. Clonar o repositório
+
+```bash
+git clone https://github.com/fiap-pos-arquitetura-tech-challenge/autoflow.git
+
+cd autoflow/infra
+```
+
+### 3. Configurar as credenciais AWS
+
+Configure as credenciais utilizando a AWS CLI:
+
+```bash
+aws configure
+```
+
+Informe as credenciais e a região:
+
+```text
+AWS Access Key ID: <SUA_ACCESS_KEY>
+AWS Secret Access Key: <SUA_SECRET_KEY>
+Default region name: us-east-2
+Default output format: json
+```
+
+Para verificar a autenticação:
+
+```bash
+aws sts get-caller-identity
+```
+
+> As credenciais AWS não devem ser armazenadas diretamente nos arquivos Terraform ou versionadas no GitHub.
+
+### 4. Configurar as variáveis do Terraform
+
+O projeto utiliza variáveis para definir os parâmetros da infraestrutura.
+
+| Variável | Descrição | Valor padrão |
+|---|---|---|
+| `aws_region` | Região AWS utilizada | `us-east-2` |
+| `project_name` | Nome do projeto | `autoflow` |
+| `db_username` | Usuário administrador do SQL Server | Conforme configuração Terraform |
+| `db_password` | Senha do SQL Server | Sem valor padrão; deve ser informada |
+
+No **PowerShell**, configure a senha do banco de dados por meio de uma variável de ambiente:
+
+```powershell
+$env:TF_VAR_db_password="SUA_SENHA_SEGURA"
+```
+
+O Terraform identifica automaticamente variáveis de ambiente iniciadas com `TF_VAR_`.
+
+> A senha deve ser mantida em segurança e não deve ser adicionada ao repositório. O Terraform State também pode conter informações sensíveis e deve ter acesso restrito.
+
+### 5. Inicializar o Terraform
+
+Dentro do diretório `/infra`, execute:
+
+```bash
+terraform init
+```
+
+Esse comando:
+
+- Inicializa o diretório Terraform.
+- Instala os providers necessários.
+- Configura o backend remoto no Amazon S3.
+- Prepara o ambiente para executar os demais comandos.
+
+O estado da infraestrutura é armazenado remotamente no bucket S3 configurado no projeto, permitindo que o Terraform acompanhe os recursos provisionados.
+
+### 6. Validar a configuração
+
+Verifique a formatação dos arquivos:
+
+```bash
+terraform fmt -check
+```
+
+Valide a sintaxe e a consistência das configurações:
+
+```bash
+terraform validate
+```
+
+### 7. Visualizar o plano de execução
+
+Antes de criar a infraestrutura, execute:
+
+```bash
+terraform plan
+```
+
+O Terraform apresenta os recursos que serão criados, alterados ou destruídos.
+
+É importante revisar esse plano antes de confirmar qualquer alteração na AWS.
+
+### 8. Provisionar a infraestrutura
+
+Execute:
+
+```bash
+terraform apply
+```
+
+Após revisar o plano apresentado, digite `yes` para confirmar.
+
+O Terraform provisionará os recursos definidos nos arquivos de configuração, incluindo:
+
+- Amazon VPC e subnets públicas e privadas.
+- Internet Gateway e NAT Gateway.
+- Route Tables e Security Groups.
+- Amazon EKS e Managed Node Group.
+- Amazon RDS SQL Server.
+
+O Amazon ECR e o bucket S3 utilizado como backend remoto são recursos previamente existentes, não criados pelo provisionamento principal.
+
+> O provisionamento pode levar vários minutos, principalmente devido à criação do cluster EKS e da instância RDS.
+
+### 9. Consultar os recursos provisionados
+
+Após a execução, consulte os outputs:
+
+```bash
+terraform output
+```
+
+Os outputs disponibilizam informações da infraestrutura, como o endpoint do banco de dados e o endereço do repositório ECR, conforme definido nos arquivos Terraform.
+
+### 10. Configurar acesso ao cluster EKS
+
+Após a criação da infraestrutura, configure o `kubectl` para acessar o cluster:
+
+```bash
+aws eks update-kubeconfig \
+  --region us-east-2 \
+  --name autoflow-eks
+```
+
+Verifique os Worker Nodes:
+
+```bash
+kubectl get nodes
+```
+
+Os nodes devem aparecer com o status `Ready`.
+
+Para consultar as informações do cluster:
+
+```bash
+kubectl cluster-info
+```
+
+### 11. Realizar o deploy da aplicação
+
+Após provisionar a infraestrutura, a aplicação pode ser implantada utilizando a pipeline CI/CD do GitHub Actions.
+
+A pipeline realiza automaticamente:
+
+1. Build e testes da aplicação.
+2. Construção e publicação da imagem Docker no Amazon ECR.
+3. Configuração dos recursos Kubernetes.
+4. Execução das migrations do banco de dados.
+5. Deploy da aplicação no Amazon EKS.
+6. Configuração da escalabilidade automática.
+
+As instruções detalhadas estão disponíveis na seção **Deploy em Kubernetes** deste README.
+
+### 12. Destruir a infraestrutura
+
+Para evitar custos desnecessários na AWS, os recursos podem ser removidos após a utilização do ambiente.
+
+Antes de destruir o cluster, é necessário garantir a remoção dos recursos Kubernetes que provisionam componentes externos na AWS, especialmente o Service do tipo `LoadBalancer`.
+
+O workflow de Terraform do projeto contempla essa limpeza antes da destruição.
+
+Para visualizar os recursos que serão removidos:
+
+```bash
+terraform plan -destroy
+```
+
+Para destruir a infraestrutura:
+
+```bash
+terraform destroy
+```
+
+Revise os recursos e confirme a operação digitando `yes`.
+
+> **Atenção:** a destruição remove recursos gerenciados pelo Terraform, incluindo o RDS. Dependendo das configurações de backup e snapshot, os dados do banco poderão ser perdidos definitivamente. O bucket S3 do Terraform State e o repositório ECR permanecem existentes por serem recursos externos ao provisionamento principal.
+
+### 13. Validação da infraestrutura como código
+
+O provisionamento do AutoFlow foi validado por meio de um ciclo completo de destruição e reconstrução da infraestrutura.
+
+**Destruição:**
+
+```text
+Plan: 0 to add, 0 to change, 25 to destroy.
+
+Destroy complete! Resources: 25 destroyed.
+```
+
+**Reconstrução:**
+
+```text
+Plan: 25 to add, 0 to change, 0 to destroy.
+
+Apply complete! Resources: 25 added, 0 changed, 0 destroyed.
+```
+
+Após a reconstrução, foram validados o cluster EKS, os Worker Nodes, o banco RDS, a execução das migrations e o deploy automatizado da API pelo GitHub Actions.
+
+Esse processo demonstra que a infraestrutura pode ser reproduzida a partir dos arquivos Terraform versionados, reduzindo a necessidade de configurações manuais.
+
+## Deploy em Kubernetes
+
+O AutoFlow utiliza o **Amazon EKS (Elastic Kubernetes Service)** para executar e gerenciar os containers da aplicação em um cluster Kubernetes.
+
+O deploy é automatizado por meio do **GitHub Actions**, responsável pela construção da imagem Docker, publicação no Amazon ECR, execução das migrations do banco de dados e atualização dos recursos Kubernetes.
+
+Os manifestos Kubernetes estão disponíveis no diretório `/k8s`.
+
+### 1. Pré-requisitos
+
+Para realizar o deploy, é necessário:
+
+- Infraestrutura AWS previamente provisionada com Terraform.
+- Cluster Amazon EKS `autoflow-eks` disponível.
+- Repositório Amazon ECR configurado.
+- Banco de dados Amazon RDS SQL Server disponível.
+- Credenciais AWS configuradas no GitHub Actions.
+- GitHub Secrets necessários à execução da aplicação.
+
+### 2. Configuração dos GitHub Secrets
+
+No repositório GitHub, acesse:
+
+**Settings → Secrets and variables → Actions**
+
+Configure os seguintes Secrets:
+
+| Secret | Descrição |
+|---|---|
+| `AWS_ACCESS_KEY_ID` | Identificador da chave de acesso AWS utilizada pela pipeline. |
+| `AWS_SECRET_ACCESS_KEY` | Chave secreta de acesso AWS. |
+| `DB_PASSWORD` | Senha do banco de dados SQL Server. |
+| `JWT_SECRET` | Chave utilizada para assinatura dos tokens JWT. |
+| `BOOTSTRAP_COLABORADOR_EMAIL` | E-mail do colaborador inicial. |
+| `BOOTSTRAP_COLABORADOR_SENHA` | Senha do colaborador inicial. |
+
+Esses valores são utilizados durante o deploy para autenticação na AWS e criação dos Kubernetes Secrets.
+
+### 3. Executar o deploy automatizado
+
+O workflow de CI/CD está localizado em:
+
+```text
+.github/workflows/ci-cd.yml
+```
+
+O deploy pode ser iniciado de duas formas:
+
+**Opção A — Push na branch `main`**
+
+```bash
+git push origin main
+```
+
+**Opção B — Execução manual pelo GitHub Actions**
+
+1. Acesse o repositório no GitHub.
+2. Abra a aba **Actions**.
+3. Selecione o workflow de CI/CD.
+4. Clique em **Run workflow**.
+5. Selecione a branch apropriada e confirme a execução.
+
+A pipeline realiza automaticamente:
+
+1. Restore, build e testes da aplicação .NET 10.
+2. Construção da imagem Docker.
+3. Publicação da imagem no Amazon ECR.
+4. Configuração de acesso ao Amazon EKS.
+5. Instalação ou verificação do Metrics Server.
+6. Aplicação do ConfigMap e criação dos Secrets Kubernetes.
+7. Execução do Migration Job para atualização do banco de dados.
+8. Atualização do Deployment, Service e HPA.
+9. Verificação da conclusão do rollout.
+
+> Em Pull Requests direcionados à `main`, o workflow executa apenas as validações de CI, sem realizar o deploy.
+
+### 4. Configurar acesso ao cluster Kubernetes
+
+Para verificar o ambiente após o deploy, instale e configure localmente:
+
+- AWS CLI
+- kubectl
+- Credenciais AWS com permissão de acesso ao cluster EKS
+
+Execute:
+
+```bash
+aws eks update-kubeconfig \
+  --region us-east-2 \
+  --name autoflow-eks
+```
+
+Esse comando configura o contexto do `kubectl` para o cluster do AutoFlow.
+
+### 5. Verificar os recursos Kubernetes
+
+**Consultar os Worker Nodes:**
+
+```bash
+kubectl get nodes
+```
+
+**Consultar os Pods:**
+
+```bash
+kubectl get pods
+```
+
+**Consultar o Deployment:**
+
+```bash
+kubectl get deployments
+```
+
+**Consultar o Service:**
+
+```bash
+kubectl get services
+```
+
+**Consultar o HPA:**
+
+```bash
+kubectl get hpa
+```
+
+**Consultar o Job de migration:**
+
+```bash
+kubectl get jobs
+```
+
+### 6. Verificar o status do deploy
+
+Para verificar se o Deployment foi atualizado corretamente:
+
+```bash
+kubectl rollout status deployment/autoflow-api
+```
+
+Para consultar os logs da aplicação:
+
+```bash
+kubectl logs deployment/autoflow-api
+```
+
+Para consultar os logs do Job de migration:
+
+```bash
+kubectl logs job/autoflow-db-migration
+```
+
+### 7. Acessar a aplicação
+
+O AutoFlow utiliza um Kubernetes Service do tipo `LoadBalancer`, que disponibiliza a API por meio de um endereço externo gerenciado pela AWS.
+
+Para consultar esse endereço:
+
+```bash
+kubectl get service autoflow-api
+```
+
+O campo `EXTERNAL-IP` apresenta o endereço externo do Load Balancer.
+
+Após a disponibilização do endereço, a API pode ser acessada utilizando HTTP na porta 80, conforme a configuração do Service.
+
+### 8. Verificar a escalabilidade automática
+
+O AutoFlow utiliza **Horizontal Pod Autoscaler (HPA)** para ajustar automaticamente a quantidade de réplicas da aplicação.
+
+A configuração utiliza:
+
+- Mínimo de 2 Pods.
+- Máximo de 5 Pods.
+- CPU alvo de 70%.
+- Memória alvo de 75%.
+
+Para acompanhar o HPA em tempo real:
+
+```bash
+kubectl get hpa -w
+```
+
+Para acompanhar a quantidade de Pods:
+
+```bash
+kubectl get pods -w
+```
+
+Para consultar o consumo de recursos:
+
+```bash
+kubectl top pods
+```
+
+Durante os testes de carga, o HPA foi validado com o aumento automático de 2 até 5 Pods.
+
+> O HPA aumenta ou reduz a quantidade de Pods, mas não provisiona novos Worker Nodes automaticamente. A capacidade de execução depende dos recursos disponíveis no cluster.
 ## Stack
 
 ### Backend
