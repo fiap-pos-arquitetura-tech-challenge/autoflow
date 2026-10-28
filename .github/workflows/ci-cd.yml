@@ -185,3 +185,39 @@ jobs:
           kubectl rollout status deployment/autoflow-api --timeout=180s
 
           echo "Deploy concluído."
+          
+          # NOVA ETAPA: Exibir endpoint público da API        
+      - name: Exibir endpoint público da API
+        if: env.SHOULD_DEPLOY == 'true'
+        working-directory: .
+        run: |
+          echo "Aguardando o DNS do Load Balancer..."
+          
+          ENDPOINT=""
+          
+          for i in $(seq 1 30); do
+            ENDPOINT=$(kubectl get service autoflow-api \
+              -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+          
+            if [ -n "$ENDPOINT" ]; then
+              break
+            fi
+          
+            echo "DNS ainda não disponível. Aguardando 10 segundos..."
+            sleep 10
+          done
+          
+          if [ -z "$ENDPOINT" ]; then
+            echo "Erro: o Load Balancer não recebeu um DNS."
+            exit 1
+          fi
+          
+          API_URL="http://$ENDPOINT"
+          
+          echo "=========================================="
+          echo "API AutoFlow: $API_URL"
+          echo "=========================================="
+          
+          echo "### 🌐 Endpoint público do AutoFlow" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "**URL:** $API_URL" >> "$GITHUB_STEP_SUMMARY"
