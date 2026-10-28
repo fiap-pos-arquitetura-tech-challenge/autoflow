@@ -1,6 +1,8 @@
-﻿using AutoFlow.Domain.Enums;
+﻿using AutoFlow.Application.Interfaces.Services;
+using AutoFlow.Domain.Enums;
 using AutoFlow.Domain.Models;
 using AutoFlow.Infrastructure.Persistence;
+using AutoFlow.IntegrationTests.Helpers;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
@@ -21,6 +23,7 @@ public class AutoFlowApplicationFactory : WebApplicationFactory<Program>
     public const int OutroClienteId = 2;
     public const string OutroClienteEmail = "outro.cliente@autoflow.com";
     public const string OutroClienteSenha = "OutroCliente@123";
+    public const string ApiKeyIntegracoes = "TestingOnlyApiKeyIntegracoesExternas";
 
     private SqliteConnection? _connection;
 
@@ -32,6 +35,7 @@ public class AutoFlowApplicationFactory : WebApplicationFactory<Program>
         Environment.SetEnvironmentVariable("Jwt__Secret", "TestingOnlySecretKey_MustBeAtLeast32BytesLong!");
         Environment.SetEnvironmentVariable("Jwt__Issuer", "AutoFlow.Api.Testing");
         Environment.SetEnvironmentVariable("Jwt__Audience", "AutoFlow.Client.Testing");
+        Environment.SetEnvironmentVariable("Integracoes__ApiKey", ApiKeyIntegracoes);
 
         builder.UseEnvironment("Testing");
 
@@ -49,6 +53,9 @@ public class AutoFlowApplicationFactory : WebApplicationFactory<Program>
             {
                 options.UseSqlite(_connection);
             });
+
+            services.RemoveAll<IEmailService>();
+            services.AddSingleton<IEmailService, FakeEmailService>();
 
             using var scope = services
                 .BuildServiceProvider()

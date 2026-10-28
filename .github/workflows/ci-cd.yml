@@ -118,6 +118,7 @@ jobs:
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           BOOTSTRAP_COLABORADOR_EMAIL: ${{ secrets.BOOTSTRAP_COLABORADOR_EMAIL }}
           BOOTSTRAP_COLABORADOR_SENHA: ${{ secrets.BOOTSTRAP_COLABORADOR_SENHA }}
+          INTEGRACOES_API_KEY: ${{ secrets.INTEGRACOES_API_KEY }}
         run: |
           RDS_ENDPOINT=$(aws rds describe-db-instances \
           --db-instance-identifier autoflow-sqlserver \
@@ -138,8 +139,9 @@ jobs:
             --from-literal="Jwt__Secret=${JWT_SECRET}" \
             --from-literal="Bootstrap__Colaborador__Email=${BOOTSTRAP_COLABORADOR_EMAIL}" \
           --from-literal="Bootstrap__Colaborador__Senha=${BOOTSTRAP_COLABORADOR_SENHA}" \
+          --from-literal="Integracoes__ApiKey=${INTEGRACOES_API_KEY}" \
           --dry-run=client \
-          -o yaml | kubectl apply -f -               
+          -o yaml | kubectl apply -f -
 
       - name: Executar migrations
         if: env.SHOULD_DEPLOY == 'true'

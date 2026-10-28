@@ -103,6 +103,120 @@ public class OrdemServicoEndpointsTests(AutoFlowApplicationFactory factory) : IC
     }
 
     [Fact]
+    public async Task PostOrdemServico_ComServicoEPecaNaCriacao_DeveRetornar201ComItensSemBaixarEstoque()
+    {
+        await AutenticarColaboradorAsync();
+
+        var sequencia = Interlocked.Increment(ref _sequenciaVeiculo);
+        var letra = (char)('A' + ((sequencia - 1) % 26));
+        var placa = $"OC{letra}1A{sequencia % 100:00}";
+        var chassi = $"9BWZZZ377VT{sequencia:000000}";
+
+        var veiculoResponse = await _client.PostAsJsonAsync("/api/veiculos", new CriaVeiculoDto(
+            ClienteId: AutoFlowApplicationFactory.ClienteId,
+            Marca: "Toyota",
+            Modelo: "Corolla",
+            AnoFabricacao: 2020,
+            AnoModelo: 2021,
+            Cor: "Preto",
+            Tipo: TipoVeiculo.Carro,
+            Combustivel: Combustivel.Gasolina,
+            Placa: placa,
+            Chassi: chassi,
+            Quilometragem: 10000));
+        veiculoResponse.EnsureSuccessStatusCode();
+        var veiculo = (await veiculoResponse.Content.ReadFromJsonAsync<VeiculoDto>())!;
+
+        var servicoResponse = await _client.PostAsJsonAsync(
+            "/api/servicos",
+            new CriaServicoDto($"Troca de óleo na abertura {sequencia}", 200m, 60));
+        servicoResponse.EnsureSuccessStatusCode();
+        var servico = (await servicoResponse.Content.ReadFromJsonAsync<ServicoDto>())!;
+
+        var pecaResponse = await _client.PostAsJsonAsync(
+            "/api/pecasInsumos",
+            new CriaPecaInsumoDto($"Filtro na abertura {sequencia}", 50m));
+        pecaResponse.EnsureSuccessStatusCode();
+        var peca = (await pecaResponse.Content.ReadFromJsonAsync<PecaInsumoDto>())!;
+
+        var estoqueResponse = await _client.GetAsync($"/api/estoques/peca/{peca.Id}");
+        estoqueResponse.EnsureSuccessStatusCode();
+        var estoque = (await estoqueResponse.Content.ReadFromJsonAsync<EstoqueDto>())!;
+
+        var entradaEstoque = await _client.PostAsJsonAsync(
+            $"/api/estoques/{estoque.Id}/entrada",
+            new MovimentaEstoqueDto(10));
+        entradaEstoque.EnsureSuccessStatusCode();
+
+        var ordemResponse = await _client.PostAsJsonAsync(
+            "/api/ordens-servico",
+            new CriaOrdemServicoDto(
+                AutoFlowApplicationFactory.ClienteId,
+                veiculo.Id,
+                "Risco no para-choque",
+                [new AdicionaServicoOrdemServicoDto(servico.Id, 1)],
+                [new AdicionaPecaOrdemServicoDto(peca.Id, 2)]));
+
+        Assert.Equal(HttpStatusCode.Created, ordemResponse.StatusCode);
+
+        var ordem = (await ordemResponse.Content.ReadFromJsonAsync<OrdemServicoDto>())!;
+        Assert.Equal(StatusOrdemServico.Recebida, ordem.Status);
+
+        var itemServico = Assert.Single(ordem.Servicos);
+        Assert.Equal(200m, itemServico.Subtotal);
+
+        var itemPeca = Assert.Single(ordem.Pecas);
+        Assert.Equal(100m, itemPeca.Subtotal);
+
+        var estoqueAposCriacaoResponse = await _client.GetAsync($"/api/estoques/peca/{peca.Id}");
+        estoqueAposCriacaoResponse.EnsureSuccessStatusCode();
+        var estoqueAposCriacao = (await estoqueAposCriacaoResponse.Content.ReadFromJsonAsync<EstoqueDto>())!;
+        Assert.Equal(10, estoqueAposCriacao.Quantidade);
+    }
+
+    [Fact]
+    public async Task PostOrdemServico_ComPecaSemEstoqueSuficienteNaCriacao_DeveRetornar400()
+    {
+        await AutenticarColaboradorAsync();
+
+        var sequencia = Interlocked.Increment(ref _sequenciaVeiculo);
+        var letra = (char)('A' + ((sequencia - 1) % 26));
+        var placa = $"OE{letra}1A{sequencia % 100:00}";
+        var chassi = $"9BWZZZ377VT{sequencia:000000}";
+
+        var veiculoResponse = await _client.PostAsJsonAsync("/api/veiculos", new CriaVeiculoDto(
+            ClienteId: AutoFlowApplicationFactory.ClienteId,
+            Marca: "Toyota",
+            Modelo: "Corolla",
+            AnoFabricacao: 2020,
+            AnoModelo: 2021,
+            Cor: "Preto",
+            Tipo: TipoVeiculo.Carro,
+            Combustivel: Combustivel.Gasolina,
+            Placa: placa,
+            Chassi: chassi,
+            Quilometragem: 10000));
+        veiculoResponse.EnsureSuccessStatusCode();
+        var veiculo = (await veiculoResponse.Content.ReadFromJsonAsync<VeiculoDto>())!;
+
+        var pecaResponse = await _client.PostAsJsonAsync(
+            "/api/pecasInsumos",
+            new CriaPecaInsumoDto($"Filtro sem estoque {sequencia}", 50m));
+        pecaResponse.EnsureSuccessStatusCode();
+        var peca = (await pecaResponse.Content.ReadFromJsonAsync<PecaInsumoDto>())!;
+
+        var ordemResponse = await _client.PostAsJsonAsync(
+            "/api/ordens-servico",
+            new CriaOrdemServicoDto(
+                AutoFlowApplicationFactory.ClienteId,
+                veiculo.Id,
+                null,
+                Pecas: [new AdicionaPecaOrdemServicoDto(peca.Id, 1)]));
+
+        Assert.Equal(HttpStatusCode.BadRequest, ordemResponse.StatusCode);
+    }
+
+    [Fact]
     public async Task GetAndamento_ComClienteDaOrdem_DeveRetornar200()
     {
         var ordem = await CriarOrdemAsync();
@@ -146,6 +260,36 @@ public class OrdemServicoEndpointsTests(AutoFlowApplicationFactory factory) : IC
         var response = await _client.GetAsync($"/api/ordens-servico/{ordem.Id}/andamento");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetOrdens_DeveOrdenarPorPrioridadeDeStatusEMaisAntigaPrimeiro()
+    {
+        var ordemRecebida = await CriarOrdemAsync();
+
+        var ordemDiagnostico = await CriarOrdemAsync();
+        await AutenticarColaboradorAsync();
+        var iniciarDiagnostico = await _client.PostAsync(
+            $"/api/ordens-servico/{ordemDiagnostico.Id}/diagnostico/iniciar",
+            null);
+        iniciarDiagnostico.EnsureSuccessStatusCode();
+
+        var ordemAguardandoAprovacao = await PrepararOrdemAguardandoAprovacaoAsync();
+
+        await AutenticarColaboradorAsync();
+        var listagemResponse = await _client.GetAsync("/api/ordens-servico");
+        listagemResponse.EnsureSuccessStatusCode();
+
+        var listagem = (await listagemResponse.Content.ReadFromJsonAsync<List<OrdemServicoDto>>())!;
+        var ids = listagem.Select(x => x.Id).ToList();
+
+        var indiceAguardando = ids.IndexOf(ordemAguardandoAprovacao.Id);
+        var indiceDiagnostico = ids.IndexOf(ordemDiagnostico.Id);
+        var indiceRecebida = ids.IndexOf(ordemRecebida.Id);
+
+        Assert.True(indiceAguardando >= 0 && indiceDiagnostico >= 0 && indiceRecebida >= 0);
+        Assert.True(indiceAguardando < indiceDiagnostico);
+        Assert.True(indiceDiagnostico < indiceRecebida);
     }
 
     [Fact]
@@ -286,6 +430,85 @@ public class OrdemServicoEndpointsTests(AutoFlowApplicationFactory factory) : IC
             new ReprovaOrcamentoOrdemServicoDto("Valor acima do esperado."));
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task PostNotificacaoExternaAprovar_ComApiKeyValida_DeveRetornar200EBaixarEstoque()
+    {
+        var ordem = await PrepararOrdemAguardandoAprovacaoAsync();
+
+        var clienteExterno = factory.CreateClient();
+        clienteExterno.DefaultRequestHeaders.Add("X-Api-Key", AutoFlowApplicationFactory.ApiKeyIntegracoes);
+
+        var response = await clienteExterno.PostAsync(
+            $"/api/ordens-servico/{ordem.Id}/orcamento/notificacao-externa/aprovar",
+            null);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var resultado = (await response.Content.ReadFromJsonAsync<OrdemServicoDto>())!;
+        Assert.Equal(StatusOrdemServico.EmExecucao, resultado.Status);
+        Assert.Equal(StatusOrcamento.Aprovado, resultado.Orcamento!.Status);
+    }
+
+    [Fact]
+    public async Task PostNotificacaoExternaAprovar_SemApiKey_DeveRetornar401()
+    {
+        var ordem = await PrepararOrdemAguardandoAprovacaoAsync();
+        var clienteAnonimo = factory.CreateClient();
+
+        var response = await clienteAnonimo.PostAsync(
+            $"/api/ordens-servico/{ordem.Id}/orcamento/notificacao-externa/aprovar",
+            null);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task PostNotificacaoExternaAprovar_ComApiKeyInvalida_DeveRetornar401()
+    {
+        var ordem = await PrepararOrdemAguardandoAprovacaoAsync();
+
+        var clienteExterno = factory.CreateClient();
+        clienteExterno.DefaultRequestHeaders.Add("X-Api-Key", "chave-errada");
+
+        var response = await clienteExterno.PostAsync(
+            $"/api/ordens-servico/{ordem.Id}/orcamento/notificacao-externa/aprovar",
+            null);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task PostNotificacaoExternaReprovar_ComApiKeyValidaEJustificativa_DeveRetornar200EVoltarParaDiagnostico()
+    {
+        var ordem = await PrepararOrdemAguardandoAprovacaoAsync();
+
+        var clienteExterno = factory.CreateClient();
+        clienteExterno.DefaultRequestHeaders.Add("X-Api-Key", AutoFlowApplicationFactory.ApiKeyIntegracoes);
+
+        var response = await clienteExterno.PostAsJsonAsync(
+            $"/api/ordens-servico/{ordem.Id}/orcamento/notificacao-externa/reprovar",
+            new ReprovaOrcamentoOrdemServicoDto("Valor acima do esperado."));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var resultado = (await response.Content.ReadFromJsonAsync<OrdemServicoDto>())!;
+        Assert.Equal(StatusOrdemServico.EmDiagnostico, resultado.Status);
+        Assert.Equal(StatusOrcamento.Reprovado, resultado.Orcamento!.Status);
+    }
+
+    [Fact]
+    public async Task PostNotificacaoExternaReprovar_SemJustificativa_DeveRetornar400()
+    {
+        var ordem = await PrepararOrdemAguardandoAprovacaoAsync();
+
+        var clienteExterno = factory.CreateClient();
+        clienteExterno.DefaultRequestHeaders.Add("X-Api-Key", AutoFlowApplicationFactory.ApiKeyIntegracoes);
+
+        var response = await clienteExterno.PostAsJsonAsync(
+            $"/api/ordens-servico/{ordem.Id}/orcamento/notificacao-externa/reprovar",
+            new ReprovaOrcamentoOrdemServicoDto(""));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]
@@ -439,6 +662,14 @@ public class OrdemServicoEndpointsTests(AutoFlowApplicationFactory factory) : IC
         Assert.NotNull(andamento.ExecucaoIniciadaEm);
         Assert.NotNull(andamento.FinalizadaEm);
         Assert.NotNull(andamento.EntregueEm);
+
+        await AutenticarColaboradorAsync();
+
+        var listagemResponse = await _client.GetAsync("/api/ordens-servico");
+        listagemResponse.EnsureSuccessStatusCode();
+
+        var listagem = (await listagemResponse.Content.ReadFromJsonAsync<List<OrdemServicoDto>>())!;
+        Assert.DoesNotContain(listagem, x => x.Id == ordemEntregue.Id);
     }
 
 }

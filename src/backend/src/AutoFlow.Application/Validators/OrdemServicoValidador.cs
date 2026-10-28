@@ -14,6 +14,28 @@ namespace AutoFlow.Application.Validators
             if (dto.VeiculoId <= 0)
                 return Result.Failure("Veículo é obrigatório.", ErrorType.Validation);
 
+            if (dto.Servicos is not null)
+            {
+                foreach (var servico in dto.Servicos)
+                {
+                    var validador = Validar(servico);
+
+                    if (validador is not null)
+                        return validador;
+                }
+            }
+
+            if (dto.Pecas is not null)
+            {
+                foreach (var peca in dto.Pecas)
+                {
+                    var validador = Validar(peca);
+
+                    if (validador is not null)
+                        return validador;
+                }
+            }
+
             return null;
         }
 

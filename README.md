@@ -147,6 +147,22 @@ test` (inclusive em CI), enquanto a aplicação em execução real continua usan
 SQL Server — a troca de provider é possível justamente porque a Infrastructure
 está isolada atrás de interfaces da Application.
 
+### Por que API key em vez de JWT na notificação externa de orçamento
+
+Os endpoints `.../orcamento/notificacao-externa/aprovar` e `.../reprovar`
+existem para um **sistema externo** (ex.: central de atendimento, bot de
+WhatsApp, gateway de e-mail/SMS) relatar a decisão do cliente sobre o
+orçamento, como alternativa ao cliente aprovar/reprovar logado no próprio
+app (`.../orcamento/aprovar`/`.../reprovar`, que seguem exigindo JWT com
+perfil `Cliente`). Um sistema externo não tem sessão do cliente nem a claim
+`clienteId` do token, então a autenticação é feita por uma chave compartilhada
+no header `X-Api-Key`, validada por um
+[ApiKeyEndpointFilter](src/backend/src/AutoFlow.Api/Security/ApiKeyEndpointFilter.cs)
+contra `Integracoes:ApiKey` — sem envolver `AddAuthentication`/`AddAuthorization`,
+já que não existe "usuário" nesse fluxo, só um sistema confiável pela posse da
+chave. Por isso essas rotas não checam `ClienteId`: a posse da API key já
+autoriza reportar a decisão de qualquer OS.
+
 ## Pré-requisitos
 
 - [.NET SDK 10.0](https://dotnet.microsoft.com/download)
@@ -165,6 +181,16 @@ migrations pendentes automaticamente e, se não houver nenhum colaborador
 cadastrado, faz o *seed* de um colaborador inicial a partir de
 `Bootstrap:Colaborador:Nome/Email/Senha`.
 
+Os endpoints de notificação externa de orçamento (`.../notificacao-externa/aprovar`
+e `.../reprovar`) exigem o header `X-Api-Key` com o valor configurado em
+`Integracoes:ApiKey`. Sem essa chave configurada, essas duas rotas sempre
+retornam `401` (as demais rotas da API não são afetadas).
+
+A cada troca de status de uma Ordem de Serviço, a API envia um e-mail ao
+cliente dono da OS via SMTP (`Smtp:Host/Port/From/UseSsl`, e opcionalmente
+`Smtp:User/Password` se o servidor exigir autenticação). O envio é
+*best-effort*: uma falha no SMTP não impede a troca de status.
+
 ### Opção 1 — Docker Compose
 
 Já vem configurado em [docker-compose.override.yml](src/backend/docker-compose.override.yml)
@@ -172,6 +198,11 @@ com um `Jwt__Secret` de desenvolvimento e um colaborador inicial padrão
 (`colaborador@autoflow.local` / `DevOnly@123456`), sobrescrevíveis pelas
 variáveis de ambiente `AUTOFLOW_BOOTSTRAP_NOME`, `AUTOFLOW_BOOTSTRAP_EMAIL` e
 `AUTOFLOW_BOOTSTRAP_SENHA`. Nenhuma ação extra é necessária.
+
+O Docker Compose também sobe um [MailCatcher](https://github.com/sj26/mailcatcher)
+(`mailcatcher`), que recebe todos os e-mails da API em desenvolvimento sem
+precisar de uma conta de e-mail real. A UI web para visualizar os e-mails
+enviados fica em `http://localhost:1080`.
 
 ### Opção 2 — Execução local com o .NET CLI
 
@@ -381,7 +412,7 @@ O documento OpenAPI cru pode ser obtido em `{url-base}/openapi/v1.json`.
 | POST   | `/api/estoques/{id}/saida`   | `Colaborador`           | Registra saída de quantidade do estoque      |
 | PUT    | `/api/estoques/{id}/ajustar` | `Colaborador`           | Ajusta a quantidade do estoque diretamente   |
 | POST   | `/api/ordens-servico` | `Colaborador` | Cria uma ordem de serviço |
-| GET    | `/api/ordens-servico` | `Colaborador` | Lista ordens de serviço |
+| GET    | `/api/ordens-servico` | `Colaborador` | Lista ordens de serviço ativas (exclui Finalizada/Entregue), ordenadas por prioridade de status (EmExecucao > AguardandoAprovacao > EmDiagnostico > Recebida) e mais antigas primeiro |
 | GET    | `/api/ordens-servico/{id}` | `Colaborador` | Obtém os detalhes completos da OS |
 | PUT    | `/api/ordens-servico/{id}/avarias` | `Colaborador` | Registra/atualiza avarias observadas |
 | POST   | `/api/ordens-servico/{id}/diagnostico/iniciar` | `Colaborador` | Inicia o diagnóstico |
@@ -394,6 +425,8 @@ O documento OpenAPI cru pode ser obtido em `{url-base}/openapi/v1.json`.
 | GET    | `/api/ordens-servico/{id}/orcamento` | `Cliente` (dono da OS) | Consulta itens e valores do orçamento |
 | POST   | `/api/ordens-servico/{id}/orcamento/aprovar` | `Cliente` (dono da OS) | Aprova o orçamento e inicia a execução |
 | POST   | `/api/ordens-servico/{id}/orcamento/reprovar` | `Cliente` (dono da OS) | Reprova o orçamento com justificativa |
+| POST   | `/api/ordens-servico/{id}/orcamento/notificacao-externa/aprovar` | API key (`X-Api-Key`) | Aprova o orçamento via notificação de um sistema externo |
+| POST   | `/api/ordens-servico/{id}/orcamento/notificacao-externa/reprovar` | API key (`X-Api-Key`) | Reprova o orçamento via notificação de um sistema externo |
 | POST   | `/api/ordens-servico/{id}/servicos/{itemServicoId}/execucao/iniciar` | `Colaborador` | Inicia a execução de um serviço |
 | POST   | `/api/ordens-servico/{id}/servicos/{itemServicoId}/execucao/finalizar` | `Colaborador` | Finaliza a execução de um serviço |
 | POST   | `/api/ordens-servico/{id}/finalizar` | `Colaborador` | Finaliza a OS após concluir todos os serviços |
@@ -412,6 +445,11 @@ O colaborador prepara diagnóstico, serviços, peças e orçamento. A aprovaçã
 é feita pelo cliente autenticado e somente para uma OS vinculada ao seu `ClienteId` no token JWT. Na aprovação,
 as peças utilizadas são baixadas do estoque. A OS só pode ser finalizada quando todos os seus serviços estiverem
 com a execução concluída.
+
+A listagem (`GET /api/ordens-servico`) é uma visão operacional, não um `SELECT *`: OS `Finalizada` ou
+`Entregue` saem da lista (mas continuam acessíveis individualmente por `GET /api/ordens-servico/{id}`), e as
+demais aparecem ordenadas pela urgência do status (`EmExecucao` > `AguardandoAprovacao` > `EmDiagnostico` >
+`Recebida`), mais antigas primeiro dentro de cada grupo.
 
 ## Executando os testes
 
